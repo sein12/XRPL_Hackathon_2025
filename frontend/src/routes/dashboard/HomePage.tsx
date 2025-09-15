@@ -48,7 +48,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4 p-8 bg-gray-300">
+      <div className="space-y-4 px-6 pt-12 pb-6 bg-gray-300">
         {/* 상단 인사 */}
         <section>
           <h2 className="text-xl font-semibold">{user?.name}</h2>

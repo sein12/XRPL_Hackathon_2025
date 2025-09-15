@@ -26,20 +26,36 @@ model User {
 }
 
 /* ---------- Product (콘텐츠 포함) ---------- */
+enum ProductCategory {
+  HEALTH        
+  TRAVEL        
+  DEVICE       
+  PET          
+  GIG          
+  ESCROW       
+  EVENT        
+  WARRANTY     
+  TELEMED       
+  TRANSIT       
+  OTHER         
+}
+
 model Product {
-  id               String   @id @default(cuid())
+  id               String           @id @default(cuid())
   name             String
   premiumDrops     BigInt
-  coverageSummary  String?          // 카드용 한 줄 요약
-  shortDescription String?          // 2~3줄 소개
-  descriptionMd    String?          // 마크다운 본문
-  features         Json?            // [{title, body}, ...]
-  active           Boolean  @default(true)
-  createdAt        DateTime @default(now())
+  coverageSummary  String?
+  shortDescription String?
+  descriptionMd    String?
+  features         Json?
+  active           Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  category         ProductCategory  @default(OTHER)
 
   policies         Policy[]
 
   @@index([active, createdAt])
+  @@index([category, active, createdAt]) // 카테고리별 최신/활성 정렬 최적화
 }
 
 /* ---------- Policy (계약) ---------- */

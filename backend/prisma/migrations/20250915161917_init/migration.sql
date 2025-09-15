@@ -20,7 +20,8 @@ CREATE TABLE "Product" (
     "descriptionMd" TEXT,
     "features" JSONB,
     "active" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "category" TEXT NOT NULL DEFAULT 'OTHER'
 );
 
 -- CreateTable
@@ -80,6 +81,9 @@ CREATE INDEX "User_username_idx" ON "User"("username");
 
 -- CreateIndex
 CREATE INDEX "Product_active_createdAt_idx" ON "Product"("active", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Product_category_active_createdAt_idx" ON "Product"("category", "active", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "Policy_userId_idx" ON "Policy"("userId");

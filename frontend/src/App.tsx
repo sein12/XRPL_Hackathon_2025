@@ -59,10 +59,7 @@ export default function App() {
               <Route index element={<HomePage />} />
 
               {/* 상품 */}
-              <Route
-                path="products"
-                element={<MobileShell title="보험 상품" backTo={-1} />}
-              >
+              <Route path="products">
                 <Route index element={<ProductsPage />} />
                 <Route path=":id" element={<ProductDetailPage />} />
               </Route>

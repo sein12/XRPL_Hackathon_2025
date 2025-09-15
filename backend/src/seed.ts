@@ -1,6 +1,6 @@
 // src/seed.ts
 import { prisma } from "./repositories/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, ProductCategory } from "@prisma/client";
 
 function daysAgo(n: number) {
   const d = new Date();
@@ -9,147 +9,417 @@ function daysAgo(n: number) {
 }
 
 async function main() {
-  // 개발 중엔 초기화가 편리
+  // Reset products for a clean seed
   await prisma.product.deleteMany();
 
-  // 공통 features 샘플
-  const travelFeatures: Prisma.JsonArray = [
-    { title: "자동 지급", body: "항공편 지연 조건 충족 시 즉시 지급" },
-    { title: "간편 청구", body: "탑승권/영수증 업로드만으로 청구 완료" },
+  // Feature presets (all new)
+  const flightFeatures: Prisma.JsonArray = [
+    {
+      title: "Real-time Tracking",
+      body: "Monitors official flight feeds for delay/cancel events",
+    },
+    {
+      title: "Instant Settlement",
+      body: "Triggers automatic payout after event verification",
+    },
   ];
 
-  const dentalFeatures: Prisma.JsonArray = [
-    { title: "응급 진료 보장", body: "치통/충치 등 응급 치과 진료 시 보장" },
-    { title: "간편 영수증", body: "영수증만 제출하면 자동 심사" },
+  const baggageFeatures: Prisma.JsonArray = [
+    {
+      title: "Lost/Delayed Baggage",
+      body: "Fixed indemnity for delay over threshold or loss",
+    },
+    {
+      title: "Simple Proof",
+      body: "Upload PIR or airline confirmation for fast review",
+    },
   ];
 
-  const outpatientFeatures: Prisma.JsonArray = [
-    { title: "소액 진료", body: "경미한 외래 진료를 신속 보장" },
-    { title: "모바일 청구", body: "사진 업로드로 간편 접수" },
+  const gigInjuryFeatures: Prisma.JsonArray = [
+    {
+      title: "Per-Diem Benefit",
+      body: "Daily benefit for medically certified downtime",
+    },
+    {
+      title: "Digital Intake",
+      body: "Mobile claim with clinic memo and invoice",
+    },
   ];
 
-  const deviceFeatures: Prisma.JsonArray = [
-    { title: "파손 보장", body: "휴대폰 파손 수리비 보장" },
-    { title: "1시간 승인", body: "간단 심사 후 빠른 승인" },
+  const rentalEscrowFeatures: Prisma.JsonArray = [
+    {
+      title: "Autonomous Release",
+      body: "Funds auto-released on both-party approval",
+    },
+    {
+      title: "Dispute Window",
+      body: "Built-in review period before fallback release",
+    },
   ];
 
-  const petFeatures: Prisma.JsonArray = [
-    { title: "반려동물 진료", body: "진료·처방·수술 일부 비용 보장" },
-    { title: "예방접종 제외", body: "예방 목적은 보장 제외" },
+  const ticketRefundFeatures: Prisma.JsonArray = [
+    {
+      title: "Event Cancellation",
+      body: "Fixed payout on organizer cancellation",
+    },
+    {
+      title: "Seat-Level Matching",
+      body: "Match e-ticket ID to validate purchase",
+    },
   ];
 
-  const freelanceFeatures: Prisma.JsonArray = [
-    { title: "마일스톤 연동", body: "검수 승인 시 자동 송금" },
-    { title: "투명 이력", body: "XRPL 트랜잭션으로 지급 이력 보관" },
+  const warrantyFeatures: Prisma.JsonArray = [
+    {
+      title: "Extended Warranty",
+      body: "Covers post-manufacturer period for key failures",
+    },
+    { title: "Repair First", body: "Reimburse authorized repair invoices" },
+  ];
+
+  const telemedFeatures: Prisma.JsonArray = [
+    {
+      title: "Tele-Visit Stipend",
+      body: "Stipend for approved remote consultations",
+    },
+    { title: "Fast Reimbursement", body: "Photo receipt + provider name only" },
+  ];
+
+  const commuteFeatures: Prisma.JsonArray = [
+    {
+      title: "Delay Pass",
+      body: "Pay when public transit delay exceeds threshold",
+    },
+    {
+      title: "Auto Verification",
+      body: "Cross-checks official transit delay feeds",
+    },
+  ];
+
+  const petSurgeryFeatures: Prisma.JsonArray = [
+    {
+      title: "Surgical Benefit",
+      body: "Fixed benefit for listed veterinary surgeries",
+    },
+    {
+      title: "Exclusions Clear",
+      body: "Preventive and cosmetic procedures excluded",
+    },
+  ];
+
+  const deviceLossFeatures: Prisma.JsonArray = [
+    {
+      title: "Theft/Loss Assist",
+      body: "Partial indemnity after police report",
+    },
+    { title: "IMEI Match", body: "Validate device by IMEI/serial number" },
   ];
 
   await prisma.product.createMany({
     data: [
-      // ── 스샷 톤에 맞춘 예시들 ────────────────────────────────────────────
       {
-        name: "치과 응급 진료 보험",
-        premiumDrops: BigInt(4_000_000), // 4 XRP
-        coverageSummary: "응급 치과 진료 시 소액 자동 보장",
+        name: "Flight Cancellation Protector",
+        category: ProductCategory.TRAVEL,
+        premiumDrops: BigInt(6_000_000), // 6 XRP
+        coverageSummary: "Fixed payout when your flight is officially canceled",
         shortDescription:
-          "갑작스러운 치통/충치 등으로 응급 치과 진료가 필요할 때 영수증만 제출하면 자동 보장되는 소액 보험입니다.",
-        descriptionMd: `## 보장 범위
-- 응급 치과 진료(충치, 발치 등) 영수증 제출 시 정액 보장
-- 동일 월 1회 한도, 세부 보장 금액은 약관 참조
+          "Automatic compensation upon airline-confirmed cancellation.",
+        descriptionMd: `## Coverage
+- Official airline cancellation after ticket issuance
+- One payout per itinerary; see terms for exclusions
 
-## 청구 방법
-1. 진료 영수증을 촬영/업로드
-2. 자동 판독 후 조건 충족 시 즉시 지급`,
-        features: dentalFeatures,
+## Claim Process
+1. Upload e-ticket and cancellation notice
+2. System verifies airline status and pays out automatically`,
+        features: flightFeatures,
         active: true,
         createdAt: daysAgo(1),
       },
       {
-        name: "일반 외래 소액 진료 보험",
-        premiumDrops: BigInt(2_500_000), // 2.5 XRP
-        coverageSummary: "경미한 외래 진료에 대해 신속 보장",
+        name: "Checked Baggage Delay & Loss",
+        category: ProductCategory.TRAVEL,
+        premiumDrops: BigInt(3_800_000), // 3.8 XRP
+        coverageSummary: "Compensation for baggage delays or loss",
         shortDescription:
-          "가벼운 외래 진료·처방에 대해 간편 접수 후 빠르게 정액 보장합니다.",
-        descriptionMd: `## 보장 범위
-- 감기/상처 등 경증 외래 진료 및 처방전
-- 동일 질병에 대한 중복 청구 제한`,
-        features: outpatientFeatures,
+          "Get paid for delayed or lost checked baggage with simple proof.",
+        descriptionMd: `## Coverage
+- Delay ≥ 6 hours: fixed payout
+- Declared loss with PIR: higher fixed payout
+
+## Claim Process
+1. Submit PIR or airline confirmation
+2. Instant decision if thresholds are met`,
+        features: baggageFeatures,
         active: true,
         createdAt: daysAgo(2),
       },
       {
-        name: "휴대폰 파손 보장",
-        premiumDrops: BigInt(3_000_000), // 3 XRP
-        coverageSummary: "휴대폰 파손 수리비 일부 보장",
+        name: "Gig Worker Injury Daily Benefit",
+        category: ProductCategory.GIG,
+        premiumDrops: BigInt(2_900_000), // 2.9 XRP
+        coverageSummary: "Per-diem benefit for certified downtime",
         shortDescription:
-          "파손 수리 영수증 업로드만으로 간단하게 보장받는 디바이스 파손 상품입니다.",
-        descriptionMd: `## 보장 범위
-- 액정 파손 등 기기 외관 손상 수리비
-- 도난/분실은 보장 제외`,
-        features: deviceFeatures,
+          "Simple daily benefit while you recover from a covered injury.",
+        descriptionMd: `## Coverage
+- Per-diem payout up to 10 days per incident
+- Requires clinic memo indicating rest period
+
+## Claim Process
+1. Upload clinic memo and invoice
+2. Daily benefit paid automatically for approved days`,
+        features: gigInjuryFeatures,
         active: true,
         createdAt: daysAgo(3),
       },
       {
-        name: "반려동물 진료 보장",
-        premiumDrops: BigInt(3_500_000), // 3.5 XRP
-        coverageSummary: "반려견/반려묘 진료비 일부 보장",
+        name: "Rental Deposit Smart Escrow",
+        category: ProductCategory.ESCROW,
+        premiumDrops: BigInt(4_500_000), // 4.5 XRP
+        coverageSummary: "Autonomous escrow for short-term rentals",
         shortDescription:
-          "반려동물의 진료·투약·수술 비용의 일부를 간편하게 보장해 줍니다.",
-        descriptionMd: `## 보장 범위
-- 질병/상해 치료 관련 비용 일부
-- 예방접종/미용 목적 비용은 제외`,
-        features: petFeatures,
+          "Funds release on joint approval or after dispute window.",
+        descriptionMd: `## Coverage
+- Holds deposit until both parties approve release
+- Auto-release after dispute window if no action
+
+## Claim Process
+1. Upload check-in/out photos if dispute arises
+2. System executes release rules automatically`,
+        features: rentalEscrowFeatures,
         active: true,
         createdAt: daysAgo(4),
       },
       {
-        name: "여행 지연 보험",
-        premiumDrops: BigInt(5_000_000), // 5 XRP
-        coverageSummary: "항공편 2시간 이상 지연 시 50 XRP 지급",
-        shortDescription: "여행 중 항공편 지연을 자동 보상해주는 소액 보험",
-        descriptionMd: `## 보장 범위
-- 항공편 출발 지연 2시간 이상: 50 XRP 지급
-- 일부 노선은 베타 적용 중
+        name: "Event Ticket Cancellation Payout",
+        category: ProductCategory.EVENT,
+        premiumDrops: BigInt(2_200_000), // 2.2 XRP
+        coverageSummary: "Fixed payout for organizer-canceled events",
+        shortDescription: "Seat-level validation and quick compensation.",
+        descriptionMd: `## Coverage
+- Organizer-announced cancellation or no-entry due to venue shutdown
+- One payout per ticket ID
 
-## 청구 방법
-1. 탑승권 또는 영수증 이미지를 업로드
-2. AI 판독 후 조건 충족 시 자동 승인 및 지급`,
-        features: travelFeatures,
+## Claim Process
+1. Upload e-ticket and cancellation notice
+2. Automatic matching and payout`,
+        features: ticketRefundFeatures,
         active: true,
         createdAt: daysAgo(5),
       },
       {
-        name: "프리랜서 마일스톤 보험",
-        premiumDrops: BigInt(3_000_000), // 3 XRP
-        coverageSummary: "검수 승인 시 계약 금액을 자동 지급",
+        name: "Home Appliance Extended Warranty",
+        category: ProductCategory.WARRANTY,
+        premiumDrops: BigInt(3_300_000), // 3.3 XRP
+        coverageSummary: "Post-warranty repair reimbursement",
         shortDescription:
-          "프리랜서·아웃소싱 작업의 마일스톤 완료를 안전하게 보장",
-        descriptionMd: `## 보장 범위
-- 합의된 작업 결과물이 승인되면 계약 금액을 자동 지급
-- 장기·반복 계약에 적합
+          "Covers key failures after manufacturer warranty ends.",
+        descriptionMd: `## Coverage
+- Major component failure (see list in terms)
+- Reimbursement up to plan limit
 
-## 청구 방법
-1. 작업 결과물 및 관련 영수증 업로드
-2. 검수 승인 후 자동 송금`,
-        features: freelanceFeatures,
+## Claim Process
+1. Repair at authorized service center
+2. Upload invoice for reimbursement`,
+        features: warrantyFeatures,
         active: true,
         createdAt: daysAgo(6),
       },
-      // 비활성 상품(리스트 필터 테스트용)
       {
-        name: "테스트(비활성) 상품",
-        premiumDrops: BigInt(1_000_000), // 1 XRP
-        coverageSummary: "노출되면 안 되는 비활성 예시",
-        shortDescription: "active=false 예시 아이템",
-        descriptionMd: `비활성 상품입니다.`,
-        features: [],
-        active: false,
+        name: "Telemedicine Visit Stipend",
+        category: ProductCategory.TELEMED,
+        premiumDrops: BigInt(1_800_000), // 1.8 XRP
+        coverageSummary: "Stipend for approved tele-consultations",
+        shortDescription: "Fast reimbursement for remote medical visits.",
+        descriptionMd: `## Coverage
+- One stipend per eligible tele-visit
+- Prescription fees excluded unless specified
+
+## Claim Process
+1. Upload visit receipt and provider info
+2. Quick review then payout`,
+        features: telemedFeatures,
+        active: true,
         createdAt: daysAgo(7),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Commuter Transit Delay Pass",
+        category: ProductCategory.TRANSIT,
+        premiumDrops: BigInt(1_500_000), // 1.5 XRP
+        coverageSummary: "Pays when your commute is significantly delayed",
+        shortDescription:
+          "Automatic payout using official transit delay feeds.",
+        descriptionMd: `## Coverage
+- Delay ≥ 30 minutes on covered lines
+- One claim per calendar day
+
+## Claim Process
+1. Register your usual route
+2. System verifies delays and pays automatically`,
+        features: commuteFeatures,
+        active: true,
+        createdAt: daysAgo(8),
+      },
+      {
+        name: "Pet Surgical Benefit Plan",
+        category: ProductCategory.PET,
+        premiumDrops: BigInt(4_200_000), // 4.2 XRP
+        coverageSummary: "Fixed benefit for listed pet surgeries",
+        shortDescription: "Simple, surgery-based payout for dogs and cats.",
+        descriptionMd: `## Coverage
+- Fixed benefit for listed procedures (see schedule)
+- Pre-authorization recommended for clarity
+
+## Claim Process
+1. Upload vet surgery invoice and chart
+2. Fixed benefit paid on verification`,
+        features: petSurgeryFeatures,
+        active: true,
+        createdAt: daysAgo(9),
+      },
+      // Inactive sample
+      {
+        name: "Device Theft & Loss Assist (Inactive)",
+        category: ProductCategory.DEVICE,
+        premiumDrops: BigInt(2_600_000), // 2.6 XRP
+        coverageSummary: "Partial indemnity after verified device theft/loss",
+        shortDescription:
+          "Inactive sample to test filters; not shown in active lists.",
+        descriptionMd: `## Coverage
+- Theft or loss with police report and IMEI match
+- Deductible applies per incident`,
+        features: deviceLossFeatures,
+        active: false,
+        createdAt: daysAgo(10),
       },
     ],
   });
 
-  console.log("✅ Seeded sample products.");
+  console.log("✅ Seeded NEW sample products with categories.");
 }
 
 main()

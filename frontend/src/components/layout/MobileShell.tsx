@@ -8,7 +8,7 @@ interface MobileShellProps {
   showHeader?: boolean;
   title?: string;
   backTo?: string | number;
-  children?: React.ReactNode; // ✅ 추가: 직접 children을 넣을 수도 있게
+  children?: React.ReactNode;
 }
 
 export default function MobileShell({
@@ -21,7 +21,7 @@ export default function MobileShell({
   const { pathname } = useLocation();
 
   return (
-    <div className="min-h-screen flex flex-col items-center">
+    <div className="min-h-screen flex flex-col items-center relative">
       {showHeader && (
         <header className="w-full max-w-[420px] flex items-center gap-2 px-4 pt-6">
           {backTo !== undefined && (
@@ -31,7 +31,7 @@ export default function MobileShell({
               onClick={() =>
                 typeof backTo === "number" ? nav(backTo) : nav(backTo)
               }
-              aria-label="뒤로가기"
+              aria-label="goBack"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -40,13 +40,15 @@ export default function MobileShell({
         </header>
       )}
 
-      <main className="flex-1 w-full max-w-[420px]">
+      <main className="flex-1 w-full max-w-[420px] pb-[72px]">
         {children ?? <Outlet />}
       </main>
 
       {pathname.startsWith("/dashboard") && (
-        <div className="w-full max-w-[420px]">
-          <BottomNav />
+        <div className="fixed bottom-0 left-0 w-full flex justify-center">
+          <div className="w-full max-w-[420px]">
+            <BottomNav />
+          </div>
         </div>
       )}
     </div>

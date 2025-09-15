@@ -18,7 +18,7 @@ export default function ProductsPage() {
         if (!mounted) return;
         setProducts(res ?? []);
       } catch (e: any) {
-        setErr(e?.response?.data?.error ?? "상품을 불러오지 못했습니다.");
+        setErr(e?.response?.data?.error);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -31,11 +31,8 @@ export default function ProductsPage() {
   const items = useMemo(() => products ?? [], [products]);
 
   return (
-    <div className="space-y-4">
-      {/* 시안처럼 본문 타이틀 크게 */}
-      <h1 className="text-2xl font-bold tracking-[-0.25px] text-[#111]">
-        보험 상품
-      </h1>
+    <div className="px-5 pt-16 space-y-6">
+      <h1 className="text-2xl font-semibold">Insurance Products</h1>
 
       {loading ? (
         <div className="flex flex-col items-center gap-3">
@@ -45,12 +42,11 @@ export default function ProductsPage() {
           <SkeletonItem />
         </div>
       ) : err ? (
-        <EmptyState title="오류" desc={err} />
+        <EmptyState title="Error" desc={err} />
       ) : items.length === 0 ? (
         <EmptyState title="표시할 상품이 없습니다." />
       ) : (
-        // Frame 170 느낌: 가운데 정렬 + gap 12
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-2.5 w-full">
           {items.map((p) => (
             <ProductListItem key={p.id} product={p} />
           ))}

@@ -11,6 +11,7 @@ export type Product = {
   features?: FeatureItem[] | null;
   active: boolean;
   createdAt: string; // ISO string
+  category: string;
 };
 
 // 정책 응답에 포함되는 요약 형태 (백엔드 DTO와 동일 필드만 유지)
