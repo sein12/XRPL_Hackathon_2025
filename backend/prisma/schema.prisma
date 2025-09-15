@@ -1,0 +1,128 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") // e.g. file:./dev.db
+}
+
+/* ---------- User & Auth ---------- */
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  email        String?  @unique
+  walletAddr   String?  @unique   // 지갑 주소를 받는다면 유지(선택)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  policies     Policy[]
+
+  @@index([username])
+}
+
+/* ---------- Product (콘텐츠 포함) ---------- */
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  premiumDrops     BigInt
+  coverageSummary  String?          // 카드용 한 줄 요약
+  shortDescription String?          // 2~3줄 소개
+  descriptionMd    String?          // 마크다운 본문
+  features         Json?            // [{title, body}, ...]
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  policies         Policy[]
+
+  @@index([active, createdAt])
+}
+
+/* ---------- Policy (계약) ---------- */
+enum PolicyStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Policy {
+  id            String       @id @default(cuid())
+  userId        String
+  productId     String
+  status        PolicyStatus @default(ACTIVE)
+
+  // 온체인 결제(프리미엄) 관련: 외부서비스가 처리 → 참조만 보관
+  premiumPaidAt DateTime?
+  premiumTxHash String?      // XRPL Tx Hash 등 외부 트랜잭션 레퍼런스
+
+  startAt       DateTime?
+  expireAt      DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id])
+  product       Product  @relation(fields: [productId], references: [id])
+  claims        Claim[]
+
+  @@index([userId])
+  @@index([productId])
+  @@index([status])
+}
+
+/* ---------- Claim (청구) ---------- */
+enum ClaimStatus {
+  SUBMITTED   // 접수
+  APPROVED    // 승인(지급 진행 가능)
+  REJECTED    // 반려
+  PAID        // 지급 완료
+  MANUAL      // 수동 검토 필요
+}
+
+enum AiDecision {
+  approve
+  reject
+  manual
+}
+
+model Claim {
+  id            String      @id @default(cuid())
+  policyId      String
+  status        ClaimStatus @default(SUBMITTED)
+
+  evidenceUrl   String                  // 업로드된 증빙 파일 URL
+  aiScore       Float?
+  aiDecision    AiDecision?
+  aiRaw         Json?                   // (선택) AI 응답 원문 백업
+
+  payoutAt      DateTime?
+  payoutTxHash  String?                 // 지급 트랜잭션 레퍼런스(외부)
+  payoutMeta    Json?                   // (선택) 지급 결과 원문/메타
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  policy        Policy      @relation(fields: [policyId], references: [id])
+
+  @@index([policyId, status, createdAt])
+}
+
+/* ---------- Webhook Log (선택) ---------- */
+enum WebhookSource {
+  AI
+  XRPL
+}
+
+model WebhookLog {
+  id        String         @id @default(cuid())
+  source    WebhookSource
+  eventType String?
+  refId     String?        // policyId/claimId/txHash 등 연결 키
+  payload   Json
+  createdAt DateTime       @default(now())
+
+  @@index([source, refId, createdAt])
+}

@@ -1,0 +1,28 @@
+// src/utils/validator.ts
+import { z } from "zod";
+
+export const signupSchema = z
+  .object({
+    username: z
+      .string()
+      .min(4)
+      .max(32)
+      .regex(/^[a-zA-Z0-9._-]+$/),
+    password: z.string().min(8),
+    passwordConfirm: z.string().min(8),
+    email: z
+      .string()
+      .email()
+      .optional()
+      .or(z.literal(""))
+      .transform((v) => v ?? null),
+  })
+  .refine((d) => d.password === d.passwordConfirm, {
+    path: ["passwordConfirm"],
+    message: "Password mismatch",
+  });
+
+export const loginSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+});
