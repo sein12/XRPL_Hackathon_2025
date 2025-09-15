@@ -15,14 +15,14 @@ import StepWallet from "@/routes/auth/signup/StepWallet";
 import StepComplete from "@/routes/auth/signup/StepComplete";
 
 import HomePage from "@/routes/dashboard/HomePage";
-// import ProductsPage from "@/routes/dashboard/ProductsPage";
-// import ProductDetailPage from "@/routes/dashboard/ProductDetailPage";
+import ProductsPage from "@/routes/dashboard/ProductsPage";
 // import ContractListPage from "@/routes/dashboard/ContractListPage";
 // import ClaimFormPage from "@/routes/dashboard/ClaimFormPage";
 // import ClaimDetailPage from "@/routes/dashboard/ClaimDetailPage";
 
 // import NotFound from "@/routes/NotFound";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import ProductDetailPage from "./routes/dashboard/ProductDetailPage";
 
 // 로그인 상태면 dashboard로, 아니면 로그인 페이지
 function AuthedRedirect() {
@@ -59,13 +59,13 @@ export default function App() {
               <Route index element={<HomePage />} />
 
               {/* 상품 */}
-              {/* <Route
+              <Route
                 path="products"
                 element={<MobileShell title="보험 상품" backTo={-1} />}
               >
                 <Route index element={<ProductsPage />} />
                 <Route path=":id" element={<ProductDetailPage />} />
-              </Route> */}
+              </Route>
 
               {/* 내 계약 */}
               {/* <Route

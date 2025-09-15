@@ -40,7 +40,7 @@ export default function MobileShell({
         </header>
       )}
 
-      <main className="flex-1 w-full max-w-[420px] p-4">
+      <main className="flex-1 w-full max-w-[420px]">
         {children ?? <Outlet />} {/* ✅ children 우선 */}
       </main>
 
