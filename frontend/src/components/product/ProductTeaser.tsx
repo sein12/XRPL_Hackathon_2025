@@ -4,13 +4,11 @@ import type { Product } from "@/types/product";
 export default function ProductTeaser({ product }: { product: Product }) {
   return (
     <Link to={`/dashboard/products/${product.id}`}>
-      <div className="rounded-lg border border-[rgba(198,198,198,0.98)] shadow-[0_0_4px_rgba(0,0,0,0.25)] bg-white px-4 py-3">
-        <div className="text-[14px] leading-[21px] tracking-[-0.25px] line-clamp-1">
-          {product.name || "어떤 보험을 들어야 잘 들었다고..."}
+      <div className="flex flex-col gap-1 rounded-md border border-gray-300 shadow-md px-4 py-3">
+        <div className="text-sm leading-[21px] tracking-[-0.25px] line-clamp-1">
+          {product.name}
         </div>
-        <div className="text-[12px] leading-[21px] text-[#999] tracking-[-0.25px] line-clamp-1">
-          {product.coverageSummary || "어떤 보험을 들어야 잘 들었다고..."}
-        </div>
+        <div className="text-xs text-gray-400">{product.coverageSummary}</div>
       </div>
     </Link>
   );

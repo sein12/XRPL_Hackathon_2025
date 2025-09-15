@@ -40,13 +40,13 @@ export default function PolicyCarousel({
     );
   }
 
-  if (error) return <EmptyState title="오류" desc={error} />;
+  if (error) return <EmptyState title="Error" desc={error} />;
 
   if (!policies.length) {
     return (
       <EmptyState
-        title="계약이 없습니다"
-        desc="상품을 가입하고 혜택을 받아보세요."
+        title="No policies yet"
+        desc="Join a product to get covered."
       />
     );
   }
@@ -61,6 +61,7 @@ export default function PolicyCarousel({
           <PolicyCarouselCard
             key={p.id}
             policy={p}
+            premiumText={p.product?.premiumDrops}
             insuredName={insuredName ?? undefined}
           />
         ))}

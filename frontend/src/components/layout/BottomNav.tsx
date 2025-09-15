@@ -1,14 +1,16 @@
+// BottomNav.tsx
 import { NavLink } from "react-router-dom";
-import { Home, Package, FileText, User, ClipboardPen } from "lucide-react"; // lucide-react icons
+import { Home, Package, FileText, User, ClipboardPen } from "lucide-react";
 
 interface Item {
   to: string;
   icon: React.ReactNode;
   label: string;
+  end?: boolean;
 }
 
 const items: Item[] = [
-  { to: "/dashboard", icon: <Home size={24} />, label: "Home" },
+  { to: "/dashboard", icon: <Home size={24} />, label: "Home", end: true }, // ✅ end
   { to: "/dashboard/products", icon: <Package size={24} />, label: "Products" },
   {
     to: "/dashboard/claims",
@@ -30,6 +32,7 @@ export default function BottomNav() {
         <NavLink
           key={item.to}
           to={item.to}
+          end={item.end} // ✅ Home만 exact 매칭
           className={({ isActive }) =>
             `flex flex-col items-center gap-1.5 text-xs font-medium transition-colors ${
               isActive

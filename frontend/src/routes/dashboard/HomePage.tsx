@@ -9,7 +9,7 @@ import type { Policy } from "@/types/contract";
 import QuickTile from "@/components/common/QuickTile";
 import PolicyCarousel from "@/components/contract/PolicyCarousel";
 import ProductTeaser from "@/components/product/ProductTeaser";
-import { FilePlus2, Search, DollarSign } from "lucide-react";
+import { FileText, ClipboardPen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function HomePage() {
@@ -31,8 +31,8 @@ export default function HomePage() {
           fetchMyPolicies(),
         ]);
         if (!mounted) return;
-        setProducts(pRes ?? []);
-        setPolicies(cRes ?? []);
+        setProducts(pRes);
+        setPolicies(cRes);
       } catch (e: any) {
         setErr(e?.response?.data?.error ?? "데이터를 불러오지 못했습니다.");
       } finally {
@@ -48,11 +48,11 @@ export default function HomePage() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4 p-8 bg-slate-300">
+      <div className="space-y-4 p-8 bg-gray-300">
         {/* 상단 인사 */}
-        <section className="space-y-1">
-          <h2 className="text-xl font-semibold">{user?.name ?? "User"}</h2>
-          <p className="text-base">
+        <section>
+          <h2 className="text-xl font-semibold">{user?.name}</h2>
+          <p className="text-lg">
             <span className="font-semibold text-sky-600 underline-offset-4">
               {policyCount}
             </span>{" "}
@@ -75,20 +75,15 @@ export default function HomePage() {
         {/* 자주 쓰는 메뉴 */}
         <section className="space-y-3">
           <h3 className="text-lg">Quick Actions</h3>
-          <div className="grid grid-cols-3 gap-3">
-            <QuickTile
-              label="Premium Payment"
-              icon={<DollarSign className="w-5 h-5" />}
-              onClick={() => nav("/dashboard/contracts")}
-            />
+          <div className="grid grid-cols-2 gap-3">
             <QuickTile
               label="Claim Insurance"
-              icon={<FilePlus2 className="w-5 h-5" />}
+              icon={<ClipboardPen className="w-5 h-5" />}
               onClick={() => nav("/dashboard/claims")}
             />
             <QuickTile
               label="View Contracts"
-              icon={<Search className="w-5 h-5" />}
+              icon={<FileText className="w-5 h-5" />}
               onClick={() => nav("/dashboard/contracts")}
             />
           </div>
@@ -97,7 +92,7 @@ export default function HomePage() {
         {/* 추천 상품 */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-[18px]">Products</h3>
+            <h3 className="text-lg">Products</h3>
             <Button
               asChild
               variant="ghost"
@@ -115,7 +110,7 @@ export default function HomePage() {
               <SkeletonBox />
             </div>
           ) : products && products.length > 0 ? (
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               {products.slice(0, 3).map((p) => (
                 <ProductTeaser key={p.id} product={p} />
               ))}

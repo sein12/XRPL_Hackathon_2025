@@ -41,7 +41,7 @@ export default function MobileShell({
       )}
 
       <main className="flex-1 w-full max-w-[420px]">
-        {children ?? <Outlet />} {/* ✅ children 우선 */}
+        {children ?? <Outlet />}
       </main>
 
       {pathname.startsWith("/dashboard") && (

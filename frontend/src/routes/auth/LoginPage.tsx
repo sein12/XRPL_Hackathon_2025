@@ -20,7 +20,7 @@ export default function LoginPage() {
       await login(form);
       nav("/dashboard", { replace: true });
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? "로그인 실패");
+      setErr(e?.response?.data?.error ?? "Login Failed");
     }
   };
 
@@ -29,7 +29,7 @@ export default function LoginPage() {
       <div className="min-h-[70vh] w-full flex flex-col gap-6 items-center justify-center">
         <div className="flex gap-2 items-center">
           <ScrollText className="w-10 h-10" />
-          <p className="text-3xl font-bold">Insurance</p>
+          <p className="text-2xl font-bold">보험자동청구체계</p>
         </div>
 
         <form onSubmit={onSubmit} className="w-3xs flex flex-col gap-2">
