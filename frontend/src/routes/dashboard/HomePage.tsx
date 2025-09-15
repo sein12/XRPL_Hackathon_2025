@@ -48,26 +48,28 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6">
-      {/* 상단 인사 */}
-      <section className="space-y-1">
-        <h2 className="text-xl font-semibold">{user?.name ?? "사용자"}님</h2>
-        <p className="text-base">
-          <span className="font-semibold text-sky-600 underline-offset-4">
-            {policyCount}건
-          </span>
-          의 계약이 있습니다.
-        </p>
-      </section>
+      <div className="flex flex-col gap-4 p-4">
+        {/* 상단 인사 */}
+        <section className="space-y-1">
+          <h2 className="text-xl font-semibold">{user?.name ?? "사용자"}님</h2>
+          <p className="text-base">
+            <span className="font-semibold text-sky-600 underline-offset-4">
+              {policyCount}건
+            </span>
+            의 계약이 있습니다.
+          </p>
+        </section>
 
-      {/* 계약 캐러셀 */}
-      <section>
-        <PolicyCarousel
-          policies={policies ?? []}
-          loading={loading}
-          error={err}
-          insuredName={user?.username}
-        />
-      </section>
+        {/* 계약 캐러셀 */}
+        <section>
+          <PolicyCarousel
+            policies={policies ?? []}
+            loading={loading}
+            error={err}
+            insuredName={user?.username}
+          />
+        </section>
+      </div>
 
       {/* 자주 쓰는 메뉴 */}
       <section className="space-y-3">
