@@ -1,17 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetchProducts } from "@/api/product";
 import { fetchMyPolicies } from "@/api/contract";
 import type { Product } from "@/types/product";
 import type { Policy } from "@/types/contract";
-import ProductCard from "@/components/product/ProductCard";
-import ContractCard from "@/components/contract/ContractCard";
-import { FilePlus2, ShoppingBag } from "lucide-react";
-import EmptyState from "@/components/common/EmptyState";
+import QuickTile from "@/components/common/QuickTile";
+import PolicyCarousel from "@/components/contract/PolicyCarousel";
+import ProductTeaser from "@/components/product/ProductTeaser";
+import { FilePlus2, Search, DollarSign } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function HomePage() {
+  const nav = useNavigate();
+  const { user } = useAuth();
+
   const [products, setProducts] = useState<Product[] | null>(null);
   const [policies, setPolicies] = useState<Policy[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,75 +44,77 @@ export default function HomePage() {
     };
   }, []);
 
-  const latestPolicy = useMemo(() => {
-    if (!policies || policies.length === 0) return null;
-    return [...policies].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )[0];
-  }, [policies]);
+  const policyCount = policies?.length ?? 0;
 
   return (
     <div className="space-y-6">
-      <Button
-        variant="ghost"
-        type="button"
-        className="w-full text-xs text-muted-foreground"
-        onClick={() => {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          localStorage.removeItem("authUser");
-          // 필요하면 새로고침
-          // window.location.reload();
-        }}
-      >
-        개발용: 인증 초기화(토큰 삭제)
-      </Button>
+      {/* 상단 인사 */}
+      <section className="space-y-1">
+        <h2 className="text-xl font-semibold">{user?.name ?? "사용자"}님</h2>
+        <p className="text-base">
+          <span className="font-semibold text-sky-600 underline-offset-4">
+            {policyCount}건
+          </span>
+          의 계약이 있습니다.
+        </p>
+      </section>
 
-      {/* 최신 계약 / 바로가기 */}
+      {/* 계약 캐러셀 */}
+      <section>
+        <PolicyCarousel
+          policies={policies ?? []}
+          loading={loading}
+          error={err}
+          insuredName={user?.username}
+        />
+      </section>
+
+      {/* 자주 쓰는 메뉴 */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">내 최신 계약</h2>
-        {loading ? (
-          <SkeletonBox />
-        ) : err ? (
-          <EmptyState title="오류" desc={err} />
-        ) : latestPolicy ? (
-          <ContractCard policy={latestPolicy} />
-        ) : (
-          <EmptyState
-            title="계약이 없습니다"
-            desc="상품을 가입하고 혜택을 받아보세요."
+        <h3 className="text-[18px]">자주 쓰는 메뉴</h3>
+        <div className="grid grid-cols-3 gap-3">
+          <QuickTile
+            label="보험료 납입"
+            icon={<DollarSign className="w-5 h-5" />}
+            onClick={() => nav("/dashboard/contracts")}
           />
-        )}
-
-        {/* 빠른 실행 */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button asChild variant="outline" className="h-12">
-            <Link to="/dashboard/claims">
-              <FilePlus2 className="mr-2 h-4 w-4" />
-              보험 청구하기
-            </Link>
-          </Button>
-          <Button asChild className="h-12">
-            <Link to="/dashboard/products">
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              상품 둘러보기
-            </Link>
-          </Button>
+          <QuickTile
+            label="보험금 청구"
+            icon={<FilePlus2 className="w-5 h-5" />}
+            onClick={() => nav("/dashboard/claims")}
+          />
+          <QuickTile
+            label="계약 조회"
+            icon={<Search className="w-5 h-5" />}
+            onClick={() => nav("/dashboard/contracts")}
+          />
         </div>
       </section>
+
       {/* 추천 상품 */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">추천 상품</h2>
+        <div className="flex items-center justify-between">
+          <h3 className="text-[18px]">상품</h3>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-auto px-2 py-0 text-gray-500"
+          >
+            <Link to="/dashboard/products">전체 보기</Link>
+          </Button>
+        </div>
+
         {loading ? (
           <div className="grid gap-3">
+            <SkeletonBox />
             <SkeletonBox />
             <SkeletonBox />
           </div>
         ) : products && products.length > 0 ? (
           <div className="grid gap-3">
-            {products.slice(0, 4).map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {products.slice(0, 3).map((p) => (
+              <ProductTeaser key={p.id} product={p} />
             ))}
           </div>
         ) : (
@@ -119,10 +125,24 @@ export default function HomePage() {
           </Card>
         )}
       </section>
+
+      {/* 개발 편의: 토큰 초기화 */}
+      <Button
+        variant="ghost"
+        type="button"
+        className="w-full text-xs text-muted-foreground"
+        onClick={() => {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("authUser");
+        }}
+      >
+        개발용: 인증 초기화(토큰 삭제)
+      </Button>
     </div>
   );
 }
 
 function SkeletonBox() {
-  return <div className="h-[92px] w-full rounded-md bg-muted animate-pulse" />;
+  return <div className="h-[66px] w-full rounded-lg bg-muted animate-pulse" />;
 }

@@ -2,8 +2,8 @@
 import { api } from "./axios";
 
 export type SignupBody = {
-  name?: string;
-  email?: string | "";
+  name: string;
+  email: string;
   username: string;
   password: string;
   passwordConfirm: string;
@@ -14,6 +14,7 @@ export type LoginBody = { username: string; password: string };
 
 export async function signup(body: SignupBody) {
   const res = await api.post("/auth/signup", {
+    name: body.name,
     username: body.username,
     password: body.password,
     passwordConfirm: body.passwordConfirm,
@@ -35,6 +36,7 @@ export async function login(body: LoginBody) {
     refreshToken: string;
     user: {
       id: string;
+      name: string;
       username: string;
       email?: string | null;
       walletAddr?: string | null;

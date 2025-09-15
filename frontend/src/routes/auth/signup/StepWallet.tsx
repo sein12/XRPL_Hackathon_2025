@@ -15,7 +15,7 @@ export default function StepWallet() {
     setErr("");
     try {
       const body = {
-        name: localStorage.getItem("signup_name") ?? undefined,
+        name: localStorage.getItem("signup_name") ?? "",
         email: localStorage.getItem("signup_email") ?? "",
         username: localStorage.getItem("signup_username") || "",
         password: localStorage.getItem("signup_password") || "",

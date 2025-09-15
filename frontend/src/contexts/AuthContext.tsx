@@ -4,6 +4,7 @@ import { login as apiLogin, signup as apiSignup } from "@/api/auth";
 
 type User = {
   id: string;
+  name: string;
   username: string;
   email?: string | null;
   walletAddr?: string | null;
