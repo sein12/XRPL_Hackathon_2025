@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/common/EmptyState";
-import ProductSection from "@/components/product/ProductSection";
 import type { Product } from "@/types/product";
+import MarkdownViewer from "@/components/common/MarkdownViewer";
 import type { Policy } from "@/types/contract";
 import { fetchProducts } from "@/api/product";
 import { createPolicy } from "@/api/contract"; // ✅ 없으면 만들어서 사용(아래 주석 참고)
 import ConfirmDialog from "@/components/common/ConfirmDialog";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 
 function formatXrpFromDrops(d: string | number | undefined) {
   if (d == null) return "-";
@@ -85,45 +87,45 @@ export default function ProductDetailPage() {
   if (!product) return <EmptyState title="상품을 찾을 수 없어요" />;
 
   return (
-    <div className="space-y-5">
-      {/* 상단 메타/히어로 */}
+    <div className="px-5 pt-16 space-y-6">
       <div className="space-y-1">
-        <div className="text-xs text-[#999] tracking-[-0.25px]">
-          일반 / 의료
-        </div>
-        <h1 className="text-[20px] font-semibold tracking-[-0.25px] leading-6">
-          {product.name}
-        </h1>
-        <p className="text-[12px] text-[#999] leading-[18px]">
-          {product.coverageSummary ?? "상품 개요 설명이 여기에 들어갑니다."}
-        </p>
+        <div className="text-xs text-gray-400">{product.category}</div>
+        <h1 className="text-xl font-semibold">{product.name}</h1>
+        <p className="text-xs text-gray-400">{product.coverageSummary}</p>
       </div>
 
-      {/* 예상 보험료 */}
-      <ProductSection title="예상 보험료">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">월 보험료(예)</span>
-          <span className="text-base font-medium">
+      <div className="flex flex-col gap-2 border border-gray-300 rounded-md p-4 ">
+        <span className="text-sm text-black">
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Rem, culpa
+          qui dolor vitae in eos reprehenderit assumenda deserunt illum unde
+          molestias, autem quisquam, doloremque minus officiis! Autem doloremque
+          ducimus itaque!
+        </span>
+
+        <Separator />
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-bold">Premium Drops</span>
+          <span className=" text-sm">
             {formatXrpFromDrops(product.premiumDrops)}
           </span>
         </div>
-      </ProductSection>
-
-      {/* 보장 내용 / 유의 사항 */}
-      <ProductSection title="보장 내용">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-bold">description</span>
+          <span className="text-sm">
+            {formatXrpFromDrops(product.premiumDrops)}
+          </span>
+        </div>
         <ul className="list-disc pl-5 space-y-2 text-sm">
           <li>응급 치과 진료 시 자동 보장 처리</li>
           <li>영수증 업로드만으로 간편 청구</li>
           <li>특약/면책 조건은 세부 약관 참고</li>
         </ul>
-      </ProductSection>
 
-      <ProductSection title="유의 사항">
         <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
           <li>계약 해지/철회는 관련 법령 및 약관을 따릅니다.</li>
           <li>보장 제외 항목이 있을 수 있습니다.</li>
         </ul>
-      </ProductSection>
+      </div>
 
       {/* CTA */}
       <div className="pt-2">
@@ -141,9 +143,7 @@ export default function ProductDetailPage() {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="보험 가입 확인"
-        description={`"${product.name}" 상품을 가입하시겠어요?`}
-        confirmText={submitting ? "처리 중..." : "확인"}
-        cancelText="취소"
+        description={`"${product.name}"\n상품을 가입하시겠어요?`}
         onConfirm={onConfirmJoin}
         disabled={submitting}
       />

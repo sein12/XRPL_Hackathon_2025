@@ -47,8 +47,8 @@ export default function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmText = "확인",
-  cancelText = "취소",
+  confirmText = "Confirm",
+  cancelText = "Cancle",
   onConfirm,
   onCancel,
   disabled,
@@ -69,37 +69,20 @@ export default function ConfirmDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
 
-      <AlertDialogContent
-        className={cn("max-w-[380px] p-0 overflow-hidden", className)}
-      >
-        <AlertDialogHeader className="px-5 pt-5 space-y-2">
-          <div
-            className={cn(
-              "flex items-center gap-2",
-              align === "center" && "justify-center"
-            )}
-          >
+      <AlertDialogContent className={cn("max-w-96", className)}>
+        <AlertDialogHeader className="space-y-2">
+          <div className="flex gap-2">
             {icon && <div className="text-muted-foreground">{icon}</div>}
-            <AlertDialogTitle className="text-base">{title}</AlertDialogTitle>
+            <AlertDialogTitle>{title}</AlertDialogTitle>
           </div>
-          {description && (
-            <AlertDialogDescription
-              className={cn(
-                "px-1 text-sm text-muted-foreground",
-                align === "center" && "text-center"
-              )}
-            >
-              {description}
-            </AlertDialogDescription>
-          )}
         </AlertDialogHeader>
-
-        <AlertDialogFooter className="px-5 pb-4 pt-3">
-          <AlertDialogCancel
-            onClick={onCancel}
-            disabled={loading}
-            className="h-9"
-          >
+        {description && (
+          <span className="whitespace-pre text-sm text-muted-foreground">
+            {description}
+          </span>
+        )}
+        <AlertDialogFooter className="flex flex-row justify-end gap-2 w-full">
+          <AlertDialogCancel onClick={onCancel} disabled={loading} className="">
             {cancelText}
           </AlertDialogCancel>
 
@@ -107,7 +90,6 @@ export default function ConfirmDialog({
             onClick={handleConfirm}
             disabled={disabled || loading}
             className={cn(
-              "h-9",
               destructive &&
                 "bg-destructive text-destructive-foreground hover:bg-destructive/90"
             )}

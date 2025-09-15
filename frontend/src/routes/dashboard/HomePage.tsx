@@ -8,9 +8,9 @@ import type { Product } from "@/types/product";
 import type { Policy } from "@/types/contract";
 import QuickTile from "@/components/common/QuickTile";
 import PolicyCarousel from "@/components/contract/PolicyCarousel";
-import ProductTeaser from "@/components/product/ProductTeaser";
 import { FileText, ClipboardPen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import ProductListItem from "@/components/product/ProductListItem";
 
 export default function HomePage() {
   const nav = useNavigate();
@@ -112,7 +112,7 @@ export default function HomePage() {
           ) : products && products.length > 0 ? (
             <div className="grid gap-2">
               {products.slice(0, 3).map((p) => (
-                <ProductTeaser key={p.id} product={p} />
+                <ProductListItem key={p.id} product={p} />
               ))}
             </div>
           ) : (
