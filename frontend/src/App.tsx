@@ -55,10 +55,7 @@ export default function App() {
           {/* 대시보드 (인증 필요) */}
           <Route element={<ProtectedRoute />}>
             {/* 홈 */}
-            <Route
-              path="/dashboard"
-              element={<MobileShell title="홈" backTo={undefined} />}
-            >
+            <Route path="/dashboard" element={<MobileShell />}>
               <Route index element={<HomePage />} />
 
               {/* 상품 */}

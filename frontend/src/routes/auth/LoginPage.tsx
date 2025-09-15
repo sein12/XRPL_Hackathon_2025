@@ -25,7 +25,7 @@ export default function LoginPage() {
   };
 
   return (
-    <MobileShell showHeader={false}>
+    <MobileShell>
       <div className="min-h-[70vh] w-full flex flex-col gap-6 items-center justify-center">
         <div className="flex gap-2 items-center">
           <ScrollText className="w-10 h-10" />

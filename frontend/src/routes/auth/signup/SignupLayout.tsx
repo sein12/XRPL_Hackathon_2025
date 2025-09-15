@@ -15,7 +15,7 @@ export default function SignupLayout() {
   const percent = ((idx + 1) / steps.length) * 100;
 
   return (
-    <MobileShell title="Sign Up">
+    <MobileShell showHeader={true} title="Sign Up">
       <div className="flex flex-col gap-4 min-h-screen">
         <div className="w-full px-4">
           <Progress className="h-1" value={percent} />

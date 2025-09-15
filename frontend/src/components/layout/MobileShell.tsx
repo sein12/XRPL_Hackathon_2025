@@ -12,7 +12,7 @@ interface MobileShellProps {
 }
 
 export default function MobileShell({
-  showHeader = true,
+  showHeader = false,
   title,
   backTo = -1,
   children,
