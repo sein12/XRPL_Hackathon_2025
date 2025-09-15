@@ -21,8 +21,19 @@ authRouter.post("/signup", async (req, res, next) => {
     }
     const hash = await bcrypt.hash(body.password, 12);
     const user = await prisma.user.create({
-      data: { username: body.username, passwordHash: hash, email: body.email },
-      select: { id: true, username: true, email: true, walletAddr: true },
+      data: {
+        name: body.name,
+        username: body.username,
+        passwordHash: hash,
+        email: body.email,
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        walletAddr: true,
+      },
     });
     res.status(201).json({ user });
   } catch (e) {
@@ -50,6 +61,7 @@ authRouter.post("/login", async (req, res, next) => {
       refreshToken,
       user: {
         id: user.id,
+        name: user.name,
         username: user.username,
         email: user.email,
         walletAddr: user.walletAddr,

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const signupSchema = z
   .object({
+    name: z.string().min(1).max(32),
     username: z
       .string()
       .min(4)
