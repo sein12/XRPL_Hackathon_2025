@@ -61,8 +61,7 @@ export default function PolicyCarousel({
           <PolicyCarouselCard
             key={p.id}
             policy={p}
-            premiumText={p.product?.premiumDrops}
-            insuredName={insuredName ?? undefined}
+            link={`/dashboard/contracts/${p.id}`}
           />
         ))}
       </div>

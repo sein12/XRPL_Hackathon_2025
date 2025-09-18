@@ -3,13 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/common/EmptyState";
 import type { Product } from "@/types/product";
-import MarkdownViewer from "@/components/common/MarkdownViewer";
 import type { Policy } from "@/types/contract";
 import { fetchProducts } from "@/api/product";
 import { createPolicy } from "@/api/contract"; // ✅ 없으면 만들어서 사용(아래 주석 참고)
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
 
 function formatXrpFromDrops(d: string | number | undefined) {
   if (d == null) return "-";
@@ -94,7 +92,7 @@ export default function ProductDetailPage() {
         <p className="text-xs text-gray-400">{product.coverageSummary}</p>
       </div>
 
-      <div className="flex flex-col gap-2 border border-gray-300 rounded-md p-4 ">
+      <div className="flex flex-col gap-4 border border-gray-200 rounded-md p-4 ">
         <span className="text-sm text-black">
           Lorem, ipsum dolor sit amet consectetur adipisicing elit. Rem, culpa
           qui dolor vitae in eos reprehenderit assumenda deserunt illum unde
@@ -103,28 +101,31 @@ export default function ProductDetailPage() {
         </span>
 
         <Separator />
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-bold">Premium Drops</span>
-          <span className=" text-sm">
-            {formatXrpFromDrops(product.premiumDrops)}
-          </span>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-bold">description</span>
-          <span className="text-sm">
-            {formatXrpFromDrops(product.premiumDrops)}
-          </span>
-        </div>
-        <ul className="list-disc pl-5 space-y-2 text-sm">
-          <li>응급 치과 진료 시 자동 보장 처리</li>
-          <li>영수증 업로드만으로 간편 청구</li>
-          <li>특약/면책 조건은 세부 약관 참고</li>
-        </ul>
 
-        <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
-          <li>계약 해지/철회는 관련 법령 및 약관을 따릅니다.</li>
-          <li>보장 제외 항목이 있을 수 있습니다.</li>
-        </ul>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm font-bold">Premium Drops</span>
+            <span className=" text-sm">
+              {formatXrpFromDrops(product.premiumDrops)}
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm font-bold">description</span>
+            <span className="text-sm">
+              {formatXrpFromDrops(product.premiumDrops)}
+            </span>
+          </div>
+          <ul className="list-disc pl-5 space-y-2 text-sm">
+            <li>응급 치과 진료 시 자동 보장 처리</li>
+            <li>영수증 업로드만으로 간편 청구</li>
+            <li>특약/면책 조건은 세부 약관 참고</li>
+          </ul>
+
+          <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+            <li>계약 해지/철회는 관련 법령 및 약관을 따릅니다.</li>
+            <li>보장 제외 항목이 있을 수 있습니다.</li>
+          </ul>
+        </div>
       </div>
 
       {/* CTA */}

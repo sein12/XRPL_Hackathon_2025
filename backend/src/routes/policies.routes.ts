@@ -12,6 +12,7 @@ import type {
 export const policyRouter = Router();
 policyRouter.use(authGuard);
 
+// TODO: 굳이 Brief로 안 하고 Product로 처리해서 다 처리할 수 있게
 // DTO들
 type ProductBriefDTO = {
   id: string;
@@ -25,8 +26,19 @@ type ProductBriefDTO = {
 
 type PolicyDTO = PolicyModel & { product: ProductBriefDTO | null };
 
+type UserBriefDTO = { id: string; name: string };
+type PolicyDetailDTO = PolicyModel & {
+  product: ProductBriefDTO | null;
+  user: UserBriefDTO;
+};
+
 // Prisma 반환 타입 (product 풀 포함)
-type PolicyRow = Prisma.PolicyGetPayload<{ include: { product: true } }>;
+type PolicyRow = Prisma.PolicyGetPayload<{
+  include: { product: true; user: { select: { id: true; name: true } } };
+}>;
+type PolicyRowDetail = Prisma.PolicyGetPayload<{
+  include: { product: true; user: { select: { id: true; name: true } } };
+}>;
 
 function toProductBriefDTO(p: ProductModel | null): ProductBriefDTO | null {
   if (!p) return null;
@@ -41,9 +53,12 @@ function toProductBriefDTO(p: ProductModel | null): ProductBriefDTO | null {
   };
 }
 
-function toPolicyDTO(row: PolicyRow): PolicyDTO {
-  // row는 Policy & { product: Product | null }
-  return { ...(row as PolicyModel), product: toProductBriefDTO(row.product) };
+function toPolicyDTO(row: PolicyRowDetail): PolicyDetailDTO {
+  return {
+    ...(row as PolicyModel),
+    product: toProductBriefDTO(row.product),
+    user: { id: row.user.id, name: row.user.name },
+  };
 }
 
 // 생성
@@ -85,7 +100,10 @@ policyRouter.get("/", async (req: AuthedRequest, res, next) => {
       orderBy: { createdAt: "desc" },
       take,
       skip,
-      include: { product: true }, // ← 전체 포함 (타입 충돌 해결)
+      include: {
+        product: true,
+        user: { select: { id: true, name: true } },
+      },
     });
 
     const safe = rows.map(toPolicyDTO);
@@ -104,13 +122,16 @@ policyRouter.get("/:id", async (req: AuthedRequest, res, next) => {
 
     const row = await prisma.policy.findUnique({
       where: { id },
-      include: { product: true }, // ← 동일
+      include: {
+        product: true,
+        user: { select: { id: true, name: true } },
+      },
     });
 
     if (!row || row.userId !== userId)
       return res.status(404).json({ error: "Not found" });
 
-    res.json(toPolicyDTO(row as PolicyRow));
+    res.json(toPolicyDTO(row as PolicyRowDetail));
   } catch (e) {
     next(e);
   }

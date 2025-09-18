@@ -17,7 +17,7 @@ export default function SignupLayout() {
   return (
     <MobileShell showHeader={true} title="Sign Up">
       <div className="flex flex-col gap-4 min-h-screen">
-        <div className="w-full px-4">
+        <div className="w-full pt-4 px-4">
           <Progress className="h-1" value={percent} />
         </div>
 

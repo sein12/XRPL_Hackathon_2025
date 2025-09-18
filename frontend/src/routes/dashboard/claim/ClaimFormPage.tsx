@@ -1,0 +1,156 @@
+// src/routes/dashboard/claim/ClaimFormPage.tsx
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import ClaimStepLayout from "@/routes/dashboard/claim/ClaimStepLayout";
+import ClaimInfoFields from "@/routes/dashboard/claim/ClaimInfoFields";
+import ClaimFileField from "@/routes/dashboard/claim/ClaimFileField";
+import EmptyState from "@/components/common/EmptyState";
+import { getPolicyDetail } from "@/api/contract";
+import { createClaim } from "@/api/claim";
+import type { PolicyDetail } from "@/types/contract";
+import type { ClaimInfoFormData } from "@/types/claim";
+import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
+
+export default function ClaimFormPage() {
+  const { policyId } = useParams<{ policyId: string }>();
+  const nav = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+  const [policy, setPolicy] = useState<PolicyDetail | null>(null);
+
+  const [step, setStep] = useState<0 | 1>(0);
+
+  const [info, setInfo] = useState<ClaimInfoFormData>({
+    claimType: "",
+    incidentDate: "",
+    incidentKind: "",
+    details: "",
+  });
+
+  const [file, setFile] = useState<File | null>(null);
+
+  // 업로드 상태
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!policyId) {
+      setErr("Invalid policy id");
+      setLoading(false);
+      return;
+    }
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await getPolicyDetail(policyId);
+        if (!mounted) return;
+        setPolicy(data);
+
+        // (선택) 동일 계약 청구 폼 값 복구 - 이전에 입력하던 값 유지
+        const saved = sessionStorage.getItem(`claim:info:${policyId}`);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved) as ClaimInfoFormData;
+            setInfo(parsed);
+          } catch {}
+        }
+      } catch (e: any) {
+        setErr(e?.response?.data?.error ?? "Failed to load policy.");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [policyId]);
+
+  if (loading)
+    return (
+      <div className="py-12 text-center text-sm text-muted-foreground">
+        Loading...
+      </div>
+    );
+  if (err || !policy)
+    return (
+      <EmptyState
+        title="Unable to start claim"
+        desc={err || "Policy not found."}
+      />
+    );
+
+  const canNext =
+    !!info.claimType.trim() &&
+    !!info.incidentDate &&
+    !!info.incidentKind.trim() &&
+    !!info.details.trim();
+
+  const onPrimary = async () => {
+    if (step === 0) {
+      if (!canNext) return;
+      setStep(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // step === 1 (submit)
+    if (!file) {
+      alert("Please attach a file.");
+      return;
+    }
+    try {
+      setSubmitting(true);
+      setUploadPct(0);
+
+      const created = await createClaim(policy.id, file, {
+        onUploadProgress: (e) => {
+          const pct =
+            e.progress != null
+              ? Math.round(e.progress * 100)
+              : e.total
+              ? Math.round((e.loaded / e.total) * 100)
+              : 0;
+          setUploadPct(pct);
+        },
+      });
+
+      // 완료 후 폼 캐시 제거
+      sessionStorage.removeItem(`claim:info:${policyId}`);
+
+      nav(`/dashboard/claims/${created.claimId}`, { replace: true });
+    } catch (e: any) {
+      alert(e?.response?.data?.error ?? "Failed to submit claim");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const onBack = () => {
+    if (step === 1) {
+      setStep(0); // 이전 단계로
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      nav(-1); // 목록 등 이전 페이지로
+    }
+  };
+
+  return (
+    <ClaimStepLayout
+      primaryLabel={step === 0 ? "다음" : submitting ? "업로드 중…" : "완료"}
+      onPrimary={onPrimary}
+      disabled={step === 0 ? !canNext : submitting}
+      onBack={onBack}
+    >
+      {step === 0 ? (
+        <ClaimInfoFields value={info} onChange={setInfo} />
+      ) : (
+        <>
+          <ClaimFileField file={file} onChange={setFile} />
+        </>
+      )}
+    </ClaimStepLayout>
+  );
+}

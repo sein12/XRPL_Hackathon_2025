@@ -16,13 +16,15 @@ import StepComplete from "@/routes/auth/signup/StepComplete";
 
 import HomePage from "@/routes/dashboard/HomePage";
 import ProductsPage from "@/routes/dashboard/ProductsPage";
-// import ContractListPage from "@/routes/dashboard/ContractListPage";
-// import ClaimFormPage from "@/routes/dashboard/ClaimFormPage";
-// import ClaimDetailPage from "@/routes/dashboard/ClaimDetailPage";
-
-// import NotFound from "@/routes/NotFound";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProductDetailPage from "./routes/dashboard/ProductDetailPage";
+import ContractListPage from "./routes/dashboard/ContractListPage";
+import ContractDetailPage from "./routes/dashboard/ContractDetailPage";
+import ClaimStepLayout from "./routes/dashboard/claim/ClaimStepLayout";
+import ClaimInfoFields from "./routes/dashboard/claim/ClaimInfoFields";
+import ClaimsPage from "./routes/dashboard/claim/ClaimsPage";
+import ClaimFileField from "./routes/dashboard/claim/ClaimFileField";
+import ClaimFormPage from "./routes/dashboard/claim/ClaimFormPage";
 
 // 로그인 상태면 dashboard로, 아니면 로그인 페이지
 function AuthedRedirect() {
@@ -65,21 +67,16 @@ export default function App() {
               </Route>
 
               {/* 내 계약 */}
-              {/* <Route
-                path="contracts"
-                element={<MobileShell title="내 계약" backTo={-1} />}
-              >
+              <Route path="contracts">
                 <Route index element={<ContractListPage />} />
-              </Route> */}
+                <Route path=":id" element={<ContractDetailPage />} />
+              </Route>
 
               {/* 청구 */}
-              {/* <Route
-                path="claims"
-                element={<MobileShell title="보험 청구" backTo={-1} />}
-              >
-                <Route index element={<ClaimFormPage />} />
-                <Route path=":id" element={<ClaimDetailPage />} />
-              </Route>  */}
+              <Route path="claims">
+                <Route index element={<ClaimsPage />} />
+                <Route path="new/:policyId" element={<ClaimFormPage />} />
+              </Route>
             </Route>
           </Route>
 
