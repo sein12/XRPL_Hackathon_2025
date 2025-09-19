@@ -2,75 +2,131 @@
 import { Router } from "express";
 import { prisma } from "../repositories/prisma";
 import { authGuard, AuthedRequest } from "../middlewares/authGuard";
-import type {
-  Prisma,
-  Policy as PolicyModel,
-  Product as ProductModel,
-  PolicyStatus,
-} from "@prisma/client";
+import type { Prisma, PolicyStatus } from "@prisma/client";
 
 export const policyRouter = Router();
 policyRouter.use(authGuard);
 
-// TODO: 굳이 Brief로 안 하고 Product로 처리해서 다 처리할 수 있게
-// DTO들
+/** ===== DTOs ===== */
 type ProductBriefDTO = {
   id: string;
   name: string;
   premiumDrops: string; // BigInt → string
-  coverageSummary: string | null;
-  shortDescription: string | null;
+  coverageSummary: string;
+  shortDescription: string;
+  category: string;
+  validityDays: number;
   active: boolean;
   createdAt: Date;
 };
 
-type PolicyDTO = PolicyModel & { product: ProductBriefDTO | null };
-
 type UserBriefDTO = { id: string; name: string };
-type PolicyDetailDTO = PolicyModel & {
-  product: ProductBriefDTO | null;
-  user: UserBriefDTO;
+
+type PolicyDTO = {
+  id: string;
+  userId: string;
+  productId: string;
+  status: PolicyStatus;
+  startAt: Date;
+  expireAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  product: ProductBriefDTO;
+  user: UserBriefDTO; // 요약 정보
 };
 
-// Prisma 반환 타입 (product 풀 포함)
+/** ===== Prisma row types (include relations) ===== */
 type PolicyRow = Prisma.PolicyGetPayload<{
   include: { product: true; user: { select: { id: true; name: true } } };
 }>;
-type PolicyRowDetail = Prisma.PolicyGetPayload<{
-  include: { product: true; user: { select: { id: true; name: true } } };
-}>;
 
-function toProductBriefDTO(p: ProductModel | null): ProductBriefDTO | null {
-  if (!p) return null;
+/** ===== Mappers ===== */
+function toProductBriefDTO(p: PolicyRow["product"]): ProductBriefDTO {
   return {
     id: p.id,
     name: p.name,
-    premiumDrops: p.premiumDrops.toString(), // 핵심: BigInt 직렬화
-    coverageSummary: p.coverageSummary ?? null,
-    shortDescription: p.shortDescription ?? null,
+    premiumDrops: p.premiumDrops.toString(),
+    coverageSummary: p.coverageSummary,
+    shortDescription: p.shortDescription,
+    category: p.category,
+    validityDays: p.validityDays,
     active: p.active,
     createdAt: p.createdAt,
   };
 }
 
-function toPolicyDTO(row: PolicyRowDetail): PolicyDetailDTO {
+function toPolicyDTO(row: PolicyRow): PolicyDTO {
   return {
-    ...(row as PolicyModel),
+    id: row.id,
+    userId: row.userId,
+    productId: row.productId,
+    status: row.status,
+    startAt: row.startAt,
+    expireAt: row.expireAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
     product: toProductBriefDTO(row.product),
     user: { id: row.user.id, name: row.user.name },
   };
 }
 
-// 생성
+/** ===== Helpers ===== */
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+function addDays(base: Date, days: number) {
+  return new Date(base.getTime() + days * MS_PER_DAY);
+}
+
+/** ===== Routes ===== */
+
+// 생성: startAt(옵션) 입력 가능, expireAt은 product.validityDays 기준 자동 계산
 policyRouter.post("/", async (req: AuthedRequest, res, next) => {
   try {
     const userId = req.user!.sub;
-    const { productId } = req.body as { productId?: string };
-    if (!productId)
-      return res.status(400).json({ error: "productId required" });
+    const { productId, startAt: startAtRaw } = req.body as {
+      productId?: string;
+      startAt?: string | number | Date; // 선택
+    };
 
-    const policy = await prisma.policy.create({ data: { userId, productId } });
-    res.status(201).json(policy);
+    if (!productId) {
+      return res.status(400).json({ error: "productId required" });
+    }
+
+    // 상품 조회 (필수 + 활성)
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    if (!product.active) {
+      return res.status(400).json({ error: "Product is inactive" });
+    }
+
+    // startAt 결정
+    const startAt = startAtRaw != null ? new Date(startAtRaw) : new Date(); // 기본 now
+
+    if (isNaN(startAt.getTime())) {
+      return res.status(400).json({ error: "Invalid startAt" });
+    }
+
+    // expireAt = startAt + validityDays
+    const expireAt = addDays(startAt, product.validityDays);
+
+    const created = await prisma.policy.create({
+      data: {
+        userId,
+        productId,
+        startAt,
+        expireAt,
+        // status는 스키마 default(ACTIVE)
+      },
+      include: {
+        product: true,
+        user: { select: { id: true, name: true } },
+      },
+    });
+
+    return res.status(201).json(toPolicyDTO(created));
   } catch (e) {
     next(e);
   }
@@ -131,7 +187,7 @@ policyRouter.get("/:id", async (req: AuthedRequest, res, next) => {
     if (!row || row.userId !== userId)
       return res.status(404).json({ error: "Not found" });
 
-    res.json(toPolicyDTO(row as PolicyRowDetail));
+    res.json(toPolicyDTO(row));
   } catch (e) {
     next(e);
   }

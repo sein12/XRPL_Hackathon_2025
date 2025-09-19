@@ -125,7 +125,7 @@ export default function HomePage() {
         </section>
       </div>
 
-      {/* <Button
+      <Button
         variant="default"
         type="button"
         className="w-full text-xs text-muted-foreground"
@@ -136,7 +136,7 @@ export default function HomePage() {
         }}
       >
         개발용: 인증 초기화(토큰 삭제)
-      </Button> */}
+      </Button>
     </div>
   );
 }

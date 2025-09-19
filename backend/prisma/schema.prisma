@@ -11,11 +11,11 @@ datasource db {
 /* ---------- User & Auth ---------- */
 model User {
   id           String   @id @default(cuid())
-  name         String   
+  name         String
   username     String   @unique
   passwordHash String
   email        String?  @unique
-  walletAddr   String?  @unique   // 지갑 주소를 받는다면 유지(선택)
+  walletAddr   String?  @unique
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -27,35 +27,37 @@ model User {
 
 /* ---------- Product (콘텐츠 포함) ---------- */
 enum ProductCategory {
-  HEALTH        
-  TRAVEL        
-  DEVICE       
-  PET          
-  GIG          
-  ESCROW       
-  EVENT        
-  WARRANTY     
-  TELEMED       
-  TRANSIT       
-  OTHER         
+  HEALTH
+  TRAVEL
+  DEVICE
+  PET
+  GIG
+  ESCROW
+  EVENT
+  WARRANTY
+  TELEMED
+  TRANSIT
+  OTHER
 }
 
 model Product {
   id               String           @id @default(cuid())
   name             String
   premiumDrops     BigInt
-  coverageSummary  String?
-  shortDescription String?
-  descriptionMd    String?
-  features         Json?
+  coverageSummary  String  // 상품 목록 - 카드 ui에 보이는 설명
+  shortDescription String  // 상세 보기 - 설명
+  descriptionMd    String  // name, shortDescription, features 기반으로 md 텍스트 생성  
+  features         Json
   active           Boolean          @default(true)
   createdAt        DateTime         @default(now())
   category         ProductCategory  @default(OTHER)
 
+  validityDays     Int
+
   policies         Policy[]
 
   @@index([active, createdAt])
-  @@index([category, active, createdAt]) // 카테고리별 최신/활성 정렬 최적화
+  @@index([category, active, createdAt])
 }
 
 /* ---------- Policy (계약) ---------- */
@@ -66,24 +68,20 @@ enum PolicyStatus {
 }
 
 model Policy {
-  id            String       @id @default(cuid())
-  userId        String
-  productId     String
-  status        PolicyStatus @default(ACTIVE)
+  id         String       @id @default(cuid())
+  userId     String
+  productId  String
+  status     PolicyStatus @default(ACTIVE)
 
-  // 온체인 결제(프리미엄) 관련: 외부서비스가 처리 → 참조만 보관
-  premiumPaidAt DateTime?
-  premiumTxHash String?      // XRPL Tx Hash 등 외부 트랜잭션 레퍼런스
+  startAt    DateTime
+  expireAt   DateTime
 
-  startAt       DateTime?
-  expireAt      DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user          User     @relation(fields: [userId], references: [id])
-  product       Product  @relation(fields: [productId], references: [id])
-  claims        Claim[]
+  user       User     @relation(fields: [userId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+  claims     Claim[]
 
   @@index([userId])
   @@index([productId])
@@ -92,11 +90,11 @@ model Policy {
 
 /* ---------- Claim (청구) ---------- */
 enum ClaimStatus {
-  SUBMITTED   // 접수
-  APPROVED    // 승인(지급 진행 가능)
-  REJECTED    // 반려
-  PAID        // 지급 완료
-  MANUAL      // 수동 검토 필요
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
+  MANUAL
 }
 
 enum AiDecision {
@@ -106,40 +104,26 @@ enum AiDecision {
 }
 
 model Claim {
-  id            String      @id @default(cuid())
-  policyId      String
-  status        ClaimStatus @default(SUBMITTED)
+  id             String      @id @default(cuid())
+  policyId       String
+  status         ClaimStatus @default(SUBMITTED)
+  rejectedReason String?
 
-  evidenceUrl   String                  // 업로드된 증빙 파일 URL
-  aiScore       Float?
-  aiDecision    AiDecision?
-  aiRaw         Json?                   // (선택) AI 응답 원문 백업
+  incidentDate   DateTime    // 사고 일자
+  details        String      // 상세 설명(긴 텍스트)
 
-  payoutAt      DateTime?
-  payoutTxHash  String?                 // 지급 트랜잭션 레퍼런스(외부)
-  payoutMeta    Json?                   // (선택) 지급 결과 원문/메타
+  evidenceUrl    String
+  aiDecision     AiDecision?
+  aiRaw          Json?
 
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  payoutAt       DateTime?
+  payoutTxHash   String?
+  payoutMeta     Json?
 
-  policy        Policy      @relation(fields: [policyId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  policy         Policy      @relation(fields: [policyId], references: [id])
 
   @@index([policyId, status, createdAt])
-}
-
-/* ---------- Webhook Log (선택) ---------- */
-enum WebhookSource {
-  AI
-  XRPL
-}
-
-model WebhookLog {
-  id        String         @id @default(cuid())
-  source    WebhookSource
-  eventType String?
-  refId     String?        // policyId/claimId/txHash 등 연결 키
-  payload   Json
-  createdAt DateTime       @default(now())
-
-  @@index([source, refId, createdAt])
 }

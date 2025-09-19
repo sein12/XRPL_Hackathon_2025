@@ -23,9 +23,7 @@ export default function ClaimFormPage() {
   const [step, setStep] = useState<0 | 1>(0);
 
   const [info, setInfo] = useState<ClaimInfoFormData>({
-    claimType: "",
     incidentDate: "",
-    incidentKind: "",
     details: "",
   });
 
@@ -82,11 +80,7 @@ export default function ClaimFormPage() {
       />
     );
 
-  const canNext =
-    !!info.claimType.trim() &&
-    !!info.incidentDate &&
-    !!info.incidentKind.trim() &&
-    !!info.details.trim();
+  const canNext = !!info.incidentDate && !!info.details.trim();
 
   const onPrimary = async () => {
     if (step === 0) {

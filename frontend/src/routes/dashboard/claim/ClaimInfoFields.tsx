@@ -1,6 +1,5 @@
 // src/components/claim/ClaimInfoFields.tsx
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import { format, parse, isValid } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { ClaimInfoFormData } from "@/types/claim";
+import { useState } from "react";
 
 export default function ClaimInfoFields({
   value,
@@ -22,6 +22,7 @@ export default function ClaimInfoFields({
   value: ClaimInfoFormData;
   onChange: (next: ClaimInfoFormData) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const set = (k: keyof ClaimInfoFormData) => (v: string) =>
     onChange({ ...value, [k]: v });
 
@@ -33,22 +34,14 @@ export default function ClaimInfoFields({
   const handleDateSelect = (d?: Date) => {
     // Date -> "yyyy-MM-dd"
     set("incidentDate")(d ? format(d, "yyyy-MM-dd") : "");
+    setOpen(false);
   };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label>보험 종류</Label>
-        <Input
-          value={value.claimType}
-          onChange={(e) => set("claimType")(e.target.value)}
-          placeholder="e.g. Dental emergency"
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
         <Label>사고 일자</Label>
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -57,7 +50,7 @@ export default function ClaimInfoFields({
                 !parsedDate && "text-muted-foreground"
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="h-4 w-4" />
               {parsedDate && isValid(parsedDate) ? (
                 format(parsedDate, "yyyy-MM-dd", { locale: ko })
               ) : (
@@ -75,15 +68,6 @@ export default function ClaimInfoFields({
             />
           </PopoverContent>
         </Popover>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label>사고 유형</Label>
-        <Input
-          value={value.incidentKind}
-          onChange={(e) => set("incidentKind")(e.target.value)}
-          placeholder="e.g. Delay, illness, damage..."
-        />
       </div>
 
       <div className="flex flex-col gap-2">

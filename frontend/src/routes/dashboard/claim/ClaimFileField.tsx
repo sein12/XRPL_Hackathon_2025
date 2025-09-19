@@ -33,7 +33,12 @@ export default function ClaimFileField({
           <Label>첨부된 파일</Label>
           <div className="flex items-center justify-between px-3 py-2 rounded-md border text-sm">
             <span className="truncate">{file.name}</span>
-            <Button size="sm" variant="ghost" onClick={() => onChange(null)}>
+            <Button
+              size="sm"
+              className="pr-1"
+              variant="ghost"
+              onClick={() => onChange(null)}
+            >
               제거
             </Button>
           </div>
