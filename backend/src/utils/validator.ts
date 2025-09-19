@@ -16,7 +16,10 @@ export const signupSchema = z
       .email()
       .optional()
       .or(z.literal(""))
-      .transform((v) => v ?? null),
+      .transform((v) => v || null),
+
+    // ✅ 추가: walletAddr
+    walletAddr: z.string().min(1).max(32),
   })
   .refine((d) => d.password === d.passwordConfirm, {
     path: ["passwordConfirm"],

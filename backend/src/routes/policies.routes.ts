@@ -79,46 +79,54 @@ function addDays(base: Date, days: number) {
 /** ===== Routes ===== */
 
 // 생성: startAt(옵션) 입력 가능, expireAt은 product.validityDays 기준 자동 계산
+// 생성
 policyRouter.post("/", async (req: AuthedRequest, res, next) => {
   try {
-    const userId = req.user!.sub;
+    const sub = req.user!.sub;
     const { productId, startAt: startAtRaw } = req.body as {
       productId?: string;
-      startAt?: string | number | Date; // 선택
+      startAt?: string | number | Date;
     };
-
-    if (!productId) {
+    if (!productId)
       return res.status(400).json({ error: "productId required" });
+
+    // ✅ User 존재 확인 (sub가 User.id가 맞는지 반드시 확인)
+    const user = await prisma.user.findUnique({ where: { id: sub } });
+    if (!user) {
+      // 토큰의 sub가 username/email이라면 여기서 매핑해야 합니다.
+      // 예: const user = await prisma.user.findUnique({ where: { username: sub }});
+      return res.status(401).json({ error: "User not found for token" });
     }
 
-    // 상품 조회 (필수 + 활성)
+    // ✅ Product 확인(활성/기간)
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
+    if (!product) return res.status(404).json({ error: "Product not found" });
     if (!product.active) {
       return res.status(400).json({ error: "Product is inactive" });
     }
 
-    // startAt 결정
-    const startAt = startAtRaw != null ? new Date(startAtRaw) : new Date(); // 기본 now
-
+    // startAt 결정 & 검증
+    const startAt = startAtRaw != null ? new Date(startAtRaw) : new Date();
     if (isNaN(startAt.getTime())) {
       return res.status(400).json({ error: "Invalid startAt" });
     }
 
     // expireAt = startAt + validityDays
-    const expireAt = addDays(startAt, product.validityDays);
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const expireAt = new Date(
+      startAt.getTime() + product.validityDays * MS_PER_DAY
+    );
 
+    // ✅ connect로 생성 (외래키 참조 안전)
     const created = await prisma.policy.create({
       data: {
-        userId,
-        productId,
         startAt,
         expireAt,
-        // status는 스키마 default(ACTIVE)
+        user: { connect: { id: user.id } },
+        product: { connect: { id: product.id } },
+        // status는 default: ACTIVE
       },
       include: {
         product: true,

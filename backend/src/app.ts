@@ -8,6 +8,7 @@ import { authRouter } from "./routes/auth.routes";
 import { productRouter } from "./routes/products.routes";
 import { policyRouter } from "./routes/policies.routes";
 import { claimRouter } from "./routes/claims.routes";
+import { credentialRouter } from "./routes/credential.routes";
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,7 @@ app.use("/auth", authRouter);
 app.use("/products", productRouter);
 app.use("/policies", policyRouter);
 app.use("/claims", claimRouter);
+app.use("/api/credentials", credentialRouter);
 
 app.use(errorHandler);
 

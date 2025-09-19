@@ -10,22 +10,27 @@ export const authRouter = Router();
 
 authRouter.post("/signup", async (req, res, next) => {
   try {
-    const body = signupSchema.parse(req.body);
+    const body = signupSchema.parse(req.body); // body.walletAddr가 이제 살아 있음
+
     const exists = await prisma.user.findUnique({
       where: { username: body.username },
     });
     if (exists) return res.status(409).json({ error: "Username taken" });
+
     if (body.email) {
       const e = await prisma.user.findUnique({ where: { email: body.email } });
       if (e) return res.status(409).json({ error: "Email already used" });
     }
+
     const hash = await bcrypt.hash(body.password, 12);
+
     const user = await prisma.user.create({
       data: {
         name: body.name,
         username: body.username,
         passwordHash: hash,
         email: body.email,
+        walletAddr: body.walletAddr ?? null,
       },
       select: {
         id: true,
@@ -35,6 +40,7 @@ authRouter.post("/signup", async (req, res, next) => {
         walletAddr: true,
       },
     });
+
     res.status(201).json({ user });
   } catch (e) {
     next(e);

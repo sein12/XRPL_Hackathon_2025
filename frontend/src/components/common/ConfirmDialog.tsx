@@ -56,7 +56,6 @@ export default function ConfirmDialog({
   destructive,
   icon,
   trigger,
-  align = "start",
   className,
 }: ConfirmDialogProps) {
   const handleConfirm = async () => {

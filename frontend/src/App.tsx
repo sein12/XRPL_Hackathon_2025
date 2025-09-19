@@ -25,6 +25,7 @@ import ClaimInfoFields from "./routes/dashboard/claim/ClaimInfoFields";
 import ClaimsPage from "./routes/dashboard/claim/ClaimsPage";
 import ClaimFileField from "./routes/dashboard/claim/ClaimFileField";
 import ClaimFormPage from "./routes/dashboard/claim/ClaimFormPage";
+import Profile from "./routes/dashboard/Profile";
 
 // 로그인 상태면 dashboard로, 아니면 로그인 페이지
 function AuthedRedirect() {
@@ -76,6 +77,11 @@ export default function App() {
               <Route path="claims">
                 <Route index element={<ClaimsPage />} />
                 <Route path="new/:policyId" element={<ClaimFormPage />} />
+              </Route>
+
+              {/* 프로필 */}
+              <Route path="profile">
+                <Route index element={<Profile />} />
               </Route>
             </Route>
           </Route>

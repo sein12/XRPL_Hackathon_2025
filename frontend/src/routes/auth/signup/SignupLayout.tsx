@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import MobileShell from "@/components/layout/MobileShell";
+import { SignupProvider } from "@/contexts/SignupContext";
 
 const steps = [
   "/signup",
@@ -16,15 +17,17 @@ export default function SignupLayout() {
 
   return (
     <MobileShell showHeader={true} title="Sign Up">
-      <div className="flex flex-col gap-4 min-h-screen">
-        <div className="w-full pt-4 px-4">
-          <Progress className="h-1" value={percent} />
-        </div>
+      <SignupProvider>
+        <div className="flex flex-col gap-4 min-h-screen">
+          <div className="w-full pt-4 px-4">
+            <Progress className="h-1" value={percent} />
+          </div>
 
-        <div className="w-full max-w-[420px] max p-4">
-          <Outlet />
+          <div className="w-full max-w-[420px] max p-4">
+            <Outlet />
+          </div>
         </div>
-      </div>
+      </SignupProvider>
     </MobileShell>
   );
 }

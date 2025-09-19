@@ -1,19 +1,14 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useSignup } from "@/contexts/SignupContext";
 
 export default function StepNameEmail() {
   const nav = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const { state, set } = useSignup();
 
   const onNext = () => {
-    // TODO: 전역 상태 관리로
-    // 임시 보관: localStorage (간단/해커톤용)
-    localStorage.setItem("signup_name", name);
-    localStorage.setItem("signup_email", email);
     nav("/signup/account");
   };
 
@@ -24,8 +19,8 @@ export default function StepNameEmail() {
         <Input
           id="name"
           placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={state.name}
+          onChange={(e) => set("name", e.target.value)}
         />
       </div>
       <div className="flex flex-col gap-2">
@@ -33,8 +28,8 @@ export default function StepNameEmail() {
         <Input
           id="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={state.email}
+          onChange={(e) => set("email", e.target.value)}
         />
       </div>
       <Button className="w-full" onClick={onNext}>

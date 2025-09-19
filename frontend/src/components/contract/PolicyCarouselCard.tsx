@@ -9,7 +9,7 @@ export default function PolicyCarouselCard({
   policy: Policy;
   link: string;
 }) {
-  const lastMonth = new Date(policy.createdAt).toISOString().slice(0, 10);
+  const expiredDate = new Date(policy.expireAt).toISOString().slice(0, 10);
   console.log(policy);
 
   return (
@@ -33,8 +33,8 @@ export default function PolicyCarouselCard({
             {dropsToXrp(policy.product?.premiumDrops || 0)} XRP
           </div>
 
-          <div className="text-[#C6C6C6]">생성일</div>
-          <div className="text-black">{lastMonth}</div>
+          <div className="text-[#C6C6C6]">만료일</div>
+          <div className="text-black">{expiredDate}</div>
         </div>
       </div>
     </Link>

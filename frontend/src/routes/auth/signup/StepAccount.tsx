@@ -3,25 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useSignup } from "@/contexts/SignupContext";
 
 export default function StepAccount() {
   const nav = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const { state, set } = useSignup();
   const [err, setErr] = useState("");
 
   const onNext = async () => {
     setErr("");
-    if (password !== passwordConfirm) {
+    if (state.password !== state.passwordConfirm) {
       setErr("비밀번호가 일치하지 않습니다.");
       return;
     }
-    // ✅ 로컬에 보관만
-    localStorage.setItem("signup_username", username);
-    localStorage.setItem("signup_password", password);
-    localStorage.setItem("signup_passwordConfirm", passwordConfirm);
-
     nav("/signup/wallet");
   };
 
@@ -32,8 +26,8 @@ export default function StepAccount() {
         <Input
           id="username"
           placeholder="ID"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={state.username}
+          onChange={(e) => set("username", e.target.value)}
         />
       </div>
       <div className="flex flex-col gap-2">
@@ -42,8 +36,8 @@ export default function StepAccount() {
           id="password"
           type="password"
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={state.password}
+          onChange={(e) => set("password", e.target.value)}
         />
       </div>
       <div className="flex flex-col gap-2">
@@ -52,8 +46,8 @@ export default function StepAccount() {
           id="password2"
           type="password"
           placeholder="Rewrite password"
-          value={passwordConfirm}
-          onChange={(e) => setPasswordConfirm(e.target.value)}
+          value={state.passwordConfirm}
+          onChange={(e) => set("passwordConfirm", e.target.value)}
         />
       </div>
       {err && <p className="text-sm text-red-600">{err}</p>}

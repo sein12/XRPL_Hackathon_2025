@@ -1,4 +1,4 @@
 export type ClaimInfoFormData = {
-  incidentDate: string; // yyyy-mm-dd
+  incidentDate: string; // "yyyy-MM-dd"
   details: string;
 };
