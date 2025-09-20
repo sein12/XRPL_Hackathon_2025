@@ -35,7 +35,7 @@ type ProductBriefDTO = {
   id: string;
   name: string;
   payoutDrops: string;
-  premiumDrops: string; // BigInt → string
+  premiumDrops: string;
   coverageSummary: string;
   shortDescription: string;
   descriptionMd: string;
@@ -57,8 +57,9 @@ type PolicyDTO = {
   expireAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  escrowId: string | null; // ← 추가
   product: ProductBriefDTO;
-  user: UserBriefDTO; // 요약 정보
+  user: UserBriefDTO;
 };
 
 /** ===== Prisma row types (include relations) ===== */
@@ -75,6 +76,7 @@ function toProductBriefDTO(p: PolicyRow["product"]): ProductBriefDTO {
     payoutDrops: p.payoutDrops.toString(),
     coverageSummary: p.coverageSummary,
     descriptionMd: p.descriptionMd,
+    // escrowId: p.escrowId,   // ❌ 제거 (Product에는 없음)
     shortDescription: p.shortDescription,
     category: p.category,
     validityDays: p.validityDays,
@@ -94,6 +96,7 @@ function toPolicyDTO(row: PolicyRow): PolicyDTO {
     expireAt: row.expireAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    escrowId: row.escrowId ?? null, // ✅ 추가
     product: toProductBriefDTO(row.product),
     user: { id: row.user.id, name: row.user.name },
   };
@@ -112,9 +115,14 @@ function addDays(base: Date, days: number) {
 policyRouter.post("/", async (req: AuthedRequest, res, next) => {
   try {
     const sub = req.user!.sub;
-    const { productId, startAt: startAtRaw } = req.body as {
+    const {
+      productId,
+      startAt: startAtRaw,
+      escrowId,
+    } = req.body as {
       productId?: string;
       startAt?: string | number | Date;
+      escrowId?: string; // ✅ 추가
     };
     if (!productId)
       return res.status(400).json({ error: "productId required" });
@@ -155,7 +163,7 @@ policyRouter.post("/", async (req: AuthedRequest, res, next) => {
         expireAt,
         user: { connect: { id: user.id } },
         product: { connect: { id: product.id } },
-        // status는 default: ACTIVE
+        escrowId: escrowId ?? null, // ✅ 여기 추가
       },
       include: {
         product: true,

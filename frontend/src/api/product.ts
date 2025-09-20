@@ -7,3 +7,8 @@ export async function fetchProducts(): Promise<Product[]> {
   // 예: { items: Product[] } 형태라면 return res.data.items;
   return Array.isArray(res.data) ? res.data : res.data.items ?? [];
 }
+
+export async function fetchProductById(id: string): Promise<Product> {
+  const res = await api.get(`/products/${id}`);
+  return res.data as Product;
+}

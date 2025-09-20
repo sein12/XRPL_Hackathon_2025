@@ -18,9 +18,9 @@ export default function ProductListItem({ product }: { product: Product }) {
       <div className="flex flex-col gap-1 ">
         <div className="text-xs text-gray-400">{product.category}</div>
         <div className="flex justify-between items-center">
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-1">
             <div className="text-sm text-black">{product.name}</div>
-            <div className="w-60 text-xs text-gray-400 truncate">
+            <div className="w-64 text-xs leading-4 text-gray-400 ">
               {product.coverageSummary}
             </div>
           </div>

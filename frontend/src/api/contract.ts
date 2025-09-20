@@ -7,8 +7,11 @@ export async function fetchMyPolicies(): Promise<Policy[]> {
   return Array.isArray(res.data) ? res.data : res.data.items ?? [];
 }
 
-export async function createPolicy(productId: string): Promise<Policy> {
-  const { data } = await api.post("/policies", { productId });
+export async function createPolicy(
+  productId: string,
+  escrowId: string
+): Promise<Policy> {
+  const { data } = await api.post("/policies", { productId, escrowId });
   return data.policy as Policy;
 }
 

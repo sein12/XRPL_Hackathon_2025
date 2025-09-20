@@ -75,6 +75,8 @@ model Policy {
   productId  String
   status     PolicyStatus @default(ACTIVE)
 
+  escrowId String?
+
   startAt    DateTime
   expireAt   DateTime
 

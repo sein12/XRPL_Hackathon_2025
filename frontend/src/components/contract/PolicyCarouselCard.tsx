@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Policy } from "@/types/contract";
 import { dropsToXrp } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 export default function PolicyCarouselCard({
   policy,
@@ -18,21 +19,19 @@ export default function PolicyCarouselCard({
           <div className="text-[16px] font-semibold tracking-[-0.25px]">
             {policy.product?.name}
           </div>
-          <span className="rounded bg-[#92DF95] text-white text-[10px] leading-[19px] px-2 py-[2px]">
-            {policy.status}
-          </span>
+          <Badge className="bg-green-600/60 text-white"> {policy.status}</Badge>
         </div>
 
-        <div className="mt-3 grid grid-cols-[55px_1fr] gap-x-5 gap-y-2 text-[12px] leading-[1.2]">
-          <div className="text-[#C6C6C6]">피보험자</div>
+        <div className="mt-3 grid grid-cols-2 gap-y-1.5 text-sm">
+          <div className="text-neutral-300">Insured</div>
           <div className="text-black">{policy.user?.name}</div>
 
-          <div className="text-[#C6C6C6]">보험료</div>
+          <div className="text-neutral-300">Premium</div>
           <div className="text-black">
             {dropsToXrp(policy.product?.premiumDrops || 0)} XRP
           </div>
 
-          <div className="text-[#C6C6C6]">만료일</div>
+          <div className="text-neutral-300">Expiration Date</div>
           <div className="text-black">{expiredDate}</div>
         </div>
       </div>

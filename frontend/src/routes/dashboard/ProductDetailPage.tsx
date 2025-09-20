@@ -57,10 +57,10 @@ export default function ProductDetailPage() {
     if (!product) return;
     try {
       setSubmitting(true);
-      const _policy: Policy = await createPolicy(product.id);
       const escrow = await createEscrow(
         formatXrpFromDrops(product.premiumDrops)
       );
+      const _policy: Policy = await createPolicy(product.id, escrow.escrow_id);
       // 가입 완료 후 계약 목록으로 이동
       nav("/dashboard/contracts", { replace: true });
     } catch (e: any) {
@@ -110,6 +110,10 @@ export default function ProductDetailPage() {
             <span className=" text-sm">
               {formatXrpFromDrops(product.payoutDrops)} XRP
             </span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm font-bold">Validity Days</span>
+            <span className=" text-sm">{product.validityDays} days</span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Description</span>

@@ -59,6 +59,7 @@ type ClaimDTO = {
   updatedAt: string;
   productDescriptionMd: string;
   payoutDropsSnapshot: string;
+  policyEscrowId: string | null; // ✅ 추가
 };
 
 function toClaimDTO(row: ClaimRow): ClaimDTO {
@@ -78,6 +79,7 @@ function toClaimDTO(row: ClaimRow): ClaimDTO {
     updatedAt: row.updatedAt.toISOString(),
     productDescriptionMd: row.productDescriptionMd,
     payoutDropsSnapshot: row.payoutDropsSnapshot.toString(),
+    policyEscrowId: row.policy.escrowId ?? null,
   };
 }
 
@@ -149,13 +151,22 @@ claimRouter.post("/", async (req: AuthedRequest, res, next) => {
         details,
         productDescriptionMd: policy.product.descriptionMd,
         payoutDropsSnapshot: policy.product.payoutDrops,
-        aiDecision, // 그대로
+        aiDecision,
         rejectedReason: rejectedReason?.trim() || null,
       },
-      select: { id: true },
+      include: {
+        // ✅ 변경: include로 policy.escrowId를 가져오자
+        policy: {
+          select: { escrowId: true },
+        },
+      },
     });
 
-    res.status(201).json({ claimId: created.id, status: "SUBMITTED" });
+    res.status(201).json({
+      claimId: created.id,
+      status: "SUBMITTED",
+      policyEscrowId: created.policy.escrowId ?? null,
+    });
   } catch (e) {
     next(e);
   }
