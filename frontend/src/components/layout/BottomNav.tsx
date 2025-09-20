@@ -12,7 +12,11 @@ interface Item {
 const items: Item[] = [
   { to: "/dashboard", icon: <Home size={24} />, label: "Home", end: true }, // ✅ end
   { to: "/dashboard/products", icon: <Package size={24} />, label: "Products" },
-
+  {
+    to: "/dashboard/claims/list",
+    icon: <ClipboardPen size={24} />,
+    label: "Claims",
+  },
   {
     to: "/dashboard/contracts",
     icon: <FileText size={24} />,
@@ -23,7 +27,7 @@ const items: Item[] = [
 
 export default function BottomNav() {
   return (
-    <nav className="flex justify-between items-center border-t-2 rounded-md bg-white px-10 py-3">
+    <nav className="flex justify-between items-center border-t-2 rounded-md bg-white px-8 py-3">
       {items.map((item) => (
         <NavLink
           key={item.to}

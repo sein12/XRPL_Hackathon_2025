@@ -51,7 +51,7 @@ export default function ClaimsPage() {
 
   return (
     <div className="px-5 pt-16 space-y-6">
-      <h1 className="text-2xl font-semibold">보험 청구</h1>
+      <h1 className="text-2xl font-semibold">Insurance Claim</h1>
 
       <div className="flex flex-col gap-2">
         {policies.map((p) => (
