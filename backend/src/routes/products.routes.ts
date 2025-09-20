@@ -7,12 +7,16 @@ export const productRouter = Router();
 productRouter.use(authGuard);
 
 // BigInt → string으로 바꿔서 내보내는 DTO
-type ProductDTO = Omit<ProductModel, "premiumDrops"> & { premiumDrops: string };
+type ProductDTO = Omit<ProductModel, "premiumDrops" | "payoutDrops"> & {
+  premiumDrops: string;
+  payoutDrops: string;
+};
 
 function toProductDTO(p: ProductModel): ProductDTO {
   return {
     ...p,
-    premiumDrops: p.premiumDrops.toString(), // ← 핵심
+    premiumDrops: p.premiumDrops.toString(),
+    payoutDrops: p.payoutDrops.toString(),
   };
 }
 
