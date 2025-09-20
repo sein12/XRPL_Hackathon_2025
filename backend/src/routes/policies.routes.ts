@@ -38,6 +38,7 @@ type ProductBriefDTO = {
   premiumDrops: string; // BigInt → string
   coverageSummary: string;
   shortDescription: string;
+  descriptionMd: string;
   category: string;
   features: FeatureItem[] | null;
   validityDays: number;
@@ -73,6 +74,7 @@ function toProductBriefDTO(p: PolicyRow["product"]): ProductBriefDTO {
     premiumDrops: p.premiumDrops.toString(),
     payoutDrops: p.payoutDrops.toString(),
     coverageSummary: p.coverageSummary,
+    descriptionMd: p.descriptionMd,
     shortDescription: p.shortDescription,
     category: p.category,
     validityDays: p.validityDays,

@@ -8,8 +8,9 @@ import EmptyState from "@/components/common/EmptyState";
 import { getPolicyDetail } from "@/api/contract";
 import { createClaim } from "@/api/claim";
 import type { PolicyDetail } from "@/types/contract";
-import type { ClaimInfoFormData } from "@/types/claim";
+import type { ClaimInfoFormData, ClaimResponseData } from "@/types/claim";
 import { Progress } from "@/components/ui/progress";
+import { agentTransactionRequest } from "@/api/xrpl";
 
 export default function ClaimFormPage() {
   const { policyId } = useParams<{ policyId: string }>();
@@ -20,7 +21,6 @@ export default function ClaimFormPage() {
   const [policy, setPolicy] = useState<PolicyDetail | null>(null);
 
   const [step, setStep] = useState<0 | 1>(0);
-
   const [info, setInfo] = useState<ClaimInfoFormData>({
     incidentDate: "",
     details: "",
@@ -89,12 +89,22 @@ export default function ClaimFormPage() {
       setSubmitting(true);
       setUploadPct(0);
 
+      const sendAiRes = await agentTransactionRequest({
+        user_transaction_description: info.details,
+        knowledge_markdown: policy.product.descriptionMd,
+        image: file,
+      });
+
+      const response = sendAiRes.results;
+
       const created = await createClaim(
         {
           policyId: policy.id,
           incidentDate: info.incidentDate, // "yyyy-MM-dd"
           details: info.details,
-          file,
+          file: file,
+          rejectedReason: response.Reason,
+          aiDecision: response.decision,
         },
         {
           onUploadProgress: (e) => {
@@ -108,7 +118,6 @@ export default function ClaimFormPage() {
           },
         }
       );
-
       nav(`/dashboard/claims/new/${created.claimId}/completed`, {
         replace: true,
       });

@@ -1,9 +1,10 @@
 // src/api/ext.ts
 import axios, { AxiosHeaders } from "axios";
 
-export const ext = axios.create({ baseURL: "/ext" });
+export const ext = axios.create({ baseURL: "http://localhost:3000/ext" });
 
 let sessionToken: string | null = localStorage.getItem("session_token") || null;
+
 export function setSessionToken(tok: string | null) {
   sessionToken = tok;
   if (tok) localStorage.setItem("session_token", tok);

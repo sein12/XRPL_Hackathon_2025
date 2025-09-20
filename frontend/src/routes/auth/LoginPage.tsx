@@ -6,9 +6,12 @@ import MobileShell from "@/components/layout/MobileShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollText } from "lucide-react";
+import { useSignup } from "@/contexts/SignupContext";
+import { loginFaucet } from "@/api/xrpl";
 
 export default function LoginPage() {
   const nav = useNavigate();
+  const { setState, setUser } = useSignup();
   const { login } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
   const [err, setErr] = useState("");
@@ -17,10 +20,35 @@ export default function LoginPage() {
     e.preventDefault();
     setErr("");
     try {
+      const faucet = await loginFaucet(); // { session_token, address, seed, public_key }
       await login(form);
+      setUser({
+        walletAddr: faucet.address,
+        userSeed: faucet.seed,
+      });
+
       nav("/dashboard", { replace: true });
     } catch (e: any) {
       setErr(e?.response?.data?.error ?? "Login Failed");
+    }
+  };
+
+  const onSignup = async () => {
+    try {
+      const faucet = await loginFaucet(); // { session_token, address, seed, public_key }
+      setState({
+        name: "",
+        email: "",
+        username: "",
+        password: "",
+        passwordConfirm: "",
+        walletAddr: faucet.address,
+        userSeed: faucet.seed, // ⚠️ 데모용(운영 금지)
+      });
+      nav("/signup");
+    } catch (e: any) {
+      setErr(e?.response?.data?.error ?? "Faucet login failed");
+      console.error(err);
     }
   };
 
@@ -29,7 +57,7 @@ export default function LoginPage() {
       <div className="min-h-[70vh] w-full flex flex-col gap-6 items-center justify-center">
         <div className="flex gap-2 items-center">
           <ScrollText className="w-10 h-10" />
-          <p className="text-2xl font-bold">보험자동청구체계</p>
+          <p className="text-2xl font-bold">DA-FI</p>
         </div>
 
         <form onSubmit={onSubmit} className="w-3xs flex flex-col gap-2">
@@ -53,8 +81,13 @@ export default function LoginPage() {
             <Button type="submit" className="w-full">
               Login
             </Button>
-            <Button variant="outline" asChild className="w-full">
-              <Link to="/signup">Sign Up</Link>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={onSignup}
+              className="w-full"
+            >
+              Sign Up
             </Button>
           </div>
         </form>

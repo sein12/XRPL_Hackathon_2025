@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/common/EmptyState";
 import { fetchPolicyById } from "@/api/contract";
 import type { Policy } from "@/types/contract";
-import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 

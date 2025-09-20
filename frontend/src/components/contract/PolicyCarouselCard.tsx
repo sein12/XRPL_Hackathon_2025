@@ -10,7 +10,6 @@ export default function PolicyCarouselCard({
   link: string;
 }) {
   const expiredDate = new Date(policy.expireAt).toISOString().slice(0, 10);
-  console.log(policy);
 
   return (
     <Link to={link} className="snap-center shrink-0 w-[335px]">

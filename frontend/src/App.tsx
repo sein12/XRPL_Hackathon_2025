@@ -25,6 +25,7 @@ import ClaimFormPage from "./routes/dashboard/claim/ClaimFormPage";
 import Profile from "./routes/dashboard/Profile";
 import ClaimComplete from "./routes/dashboard/claim/ClaimComplete";
 import ClaimListPage from "./routes/dashboard/claim/ClaimListPage";
+import { SignupProvider } from "./contexts/SignupContext";
 
 // 로그인 상태면 dashboard로, 아니면 로그인 페이지
 function AuthedRedirect() {
@@ -41,59 +42,58 @@ function ProtectedRoute() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* 로그인 */}
-          <Route path="/" element={<AuthedRedirect />} />
+      <SignupProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* 로그인 */}
+            <Route path="/" element={<AuthedRedirect />} />
 
-          {/* 회원가입 (스텝) */}
-          <Route path="/signup" element={<SignupLayout />}>
-            <Route index element={<StepNameEmail />} />
-            <Route path="account" element={<StepAccount />} />
-            <Route path="wallet" element={<StepWallet />} />
-            <Route path="complete" element={<StepComplete />} />
-          </Route>
+            {/* 회원가입 (스텝) */}
+            <Route path="/signup" element={<SignupLayout />}>
+              <Route index element={<StepNameEmail />} />
+              <Route path="account" element={<StepAccount />} />
+              <Route path="wallet" element={<StepWallet />} />
+              <Route path="complete" element={<StepComplete />} />
+            </Route>
 
-          {/* 대시보드 (인증 필요) */}
-          <Route element={<ProtectedRoute />}>
-            {/* 홈 */}
-            <Route path="/dashboard" element={<MobileShell />}>
-              <Route index element={<HomePage />} />
+            {/* 대시보드 (인증 필요) */}
+            <Route element={<ProtectedRoute />}>
+              {/* 홈 */}
+              <Route path="/dashboard" element={<MobileShell />}>
+                <Route index element={<HomePage />} />
 
-              {/* 상품 */}
-              <Route path="products">
-                <Route index element={<ProductsPage />} />
-                <Route path=":id" element={<ProductDetailPage />} />
-              </Route>
+                {/* 상품 */}
+                <Route path="products">
+                  <Route index element={<ProductsPage />} />
+                  <Route path=":id" element={<ProductDetailPage />} />
+                </Route>
 
-              {/* 내 계약 */}
-              <Route path="contracts">
-                <Route index element={<ContractListPage />} />
-                <Route path=":id" element={<ContractDetailPage />} />
-              </Route>
+                {/* 내 계약 */}
+                <Route path="contracts">
+                  <Route index element={<ContractListPage />} />
+                  <Route path=":id" element={<ContractDetailPage />} />
+                </Route>
 
-              {/* 청구 */}
-              <Route path="claims">
-                <Route index element={<ContractToClaimPage />} />
-                <Route path="list" element={<ClaimListPage />} />
-                <Route path="new/:policyId" element={<ClaimFormPage />} />
-                <Route
-                  path="new/:policyId/completed"
-                  element={<ClaimComplete />}
-                />
-              </Route>
+                {/* 청구 */}
+                <Route path="claims">
+                  <Route index element={<ContractToClaimPage />} />
+                  <Route path="list" element={<ClaimListPage />} />
+                  <Route path="new/:policyId" element={<ClaimFormPage />} />
+                  <Route
+                    path="new/:policyId/completed"
+                    element={<ClaimComplete />}
+                  />
+                </Route>
 
-              {/* 프로필 */}
-              <Route path="profile">
-                <Route index element={<Profile />} />
+                {/* 프로필 */}
+                <Route path="profile">
+                  <Route index element={<Profile />} />
+                </Route>
               </Route>
             </Route>
-          </Route>
-
-          {/* Not Found */}
-          {/* <Route path="*" element={<NotFound />} /> */}
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </SignupProvider>
     </AuthProvider>
   );
 }

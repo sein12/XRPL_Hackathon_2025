@@ -39,6 +39,7 @@ export type ProductBrief = Pick<
   | "payoutDrops"
   | "coverageSummary"
   | "shortDescription"
+  | "descriptionMd"
   | "active"
   | "createdAt"
   | "category"

@@ -23,6 +23,7 @@ import {
 
 export default function StepWallet() {
   const nav = useNavigate();
+
   const { signup } = useAuth();
   const { state, set, reset } = useSignup();
 

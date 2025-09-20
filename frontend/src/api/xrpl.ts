@@ -1,4 +1,5 @@
 // src/api/xrpl.ts
+import type { ClaimResponseData } from "@/types/claim";
 import { ext, setSessionToken } from "./ext";
 
 export type AgentsDecision =
@@ -44,18 +45,6 @@ export async function getClientBalance() {
     client_address: string;
     client_balance_xrp: number;
   }>("/balances/client");
-  return data;
-}
-
-/** 4) Addresses */
-export async function getInsurerAddress() {
-  const { data } = await ext.get<{ insurer_address: string }>(
-    "/address/insurer"
-  );
-  return data;
-}
-export async function getClientAddress() {
-  const { data } = await ext.get<{ client_address: string }>("/address/client");
   return data;
 }
 
@@ -119,7 +108,7 @@ export async function agentTransactionRequest(params: {
   if (params.agent2_system_prompt)
     fd.append("agent2_system_prompt", params.agent2_system_prompt);
 
-  const { data } = await ext.post<{ results: any }>(
+  const { data } = await ext.post<{ results: ClaimResponseData }>(
     "/agent_transaction_request",
     fd,
     {

@@ -1,11 +1,12 @@
 // src/routes/MyPage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   fetchMyCredentialsBySeed,
   type CredentialObject,
 } from "@/api/credential";
+import { useSignup } from "@/contexts/SignupContext";
+import { getClientBalance } from "@/api/xrpl";
 
 /** hex → utf8 (CredentialType/URI 간단 디코더; 실패 시 원본 반환) */
 function hexToUtf8Safe(hex?: string) {
@@ -18,10 +19,20 @@ function hexToUtf8Safe(hex?: string) {
 }
 
 export default function Profile() {
-  const { user } = useAuth(); // user.walletAddr: 현재 데모에선 'seed'가 들어있음
+  const { user } = useSignup();
   const [items, setItems] = useState<CredentialObject[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string>("");
+  const [balance, setBalance] = useState<number>(0);
+
+  const getBalance = async () => {
+    const res = await getClientBalance();
+    setBalance(res.client_balance_xrp);
+  };
+
+  useEffect(() => {
+    getBalance();
+  }, []);
 
   const onCheck = async () => {
     setErr("");
@@ -32,6 +43,7 @@ export default function Profile() {
       return;
     }
     if (!user.walletAddr) {
+      console.log(user);
       setErr("지갑(현재 데모에선 seed)이 없습니다.");
       return;
     }
@@ -39,7 +51,7 @@ export default function Profile() {
     setLoading(true);
     try {
       // ⚠️ 데모 전용: 서버에 seed를 전달해 조회
-      const res = await fetchMyCredentialsBySeed(user.walletAddr);
+      const res = await fetchMyCredentialsBySeed(user.userSeed);
       setItems(res.items ?? []);
     } catch (e: any) {
       setErr(e?.response?.data?.error ?? "조회 중 오류가 발생했습니다.");
@@ -48,7 +60,7 @@ export default function Profile() {
     }
   };
 
-  const maskedSeed = user?.walletAddr
+  const maskedWalletAddr = user?.walletAddr
     ? user.walletAddr.slice(0, 4) + "••••••••••" + user.walletAddr.slice(-4)
     : "";
 
@@ -61,11 +73,17 @@ export default function Profile() {
           서명으로 전환하세요.
         </p>
       </div>
+      <div>
+        <span className="text-sm">
+          현재 지갑 잔액:{" "}
+          <span className="font-mono">{balance.toLocaleString()} XRP</span>
+        </span>
+      </div>
 
       <div className="rounded-md border p-4 space-y-2">
         <div className="text-sm">
           <span className="font-medium">현재 저장 값</span>:{" "}
-          <span className="font-mono">{maskedSeed || "—"}</span>
+          <span className="font-mono">{maskedWalletAddr || "—"}</span>
         </div>
         <Button onClick={onCheck} disabled={loading}>
           {loading ? "조회 중..." : "내 Credential 조회"}

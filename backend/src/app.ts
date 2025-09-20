@@ -9,6 +9,7 @@ import { productRouter } from "./routes/products.routes";
 import { policyRouter } from "./routes/policies.routes";
 import { claimRouter } from "./routes/claims.routes";
 import { credentialRouter } from "./routes/credential.routes";
+import externalRouter from "./routes/external.routes";
 
 const app = express();
 app.use(cors());

@@ -17,6 +17,7 @@ type CreateClaimBody = {
   policyId?: string;
   incidentDate?: string;
   details?: string;
+  rejectedReason?: string;
 };
 
 const ALLOWED_MIME = new Set(["application/pdf", "image/png", "image/jpeg"]);
@@ -96,8 +97,8 @@ claimRouter.get("/", async (req: AuthedRequest, res, next) => {
 claimRouter.post("/", async (req: AuthedRequest, res, next) => {
   try {
     const userId = req.user!.sub;
-    const { policyId, incidentDate, details } = req.body as CreateClaimBody;
-
+    const { policyId, incidentDate, details, rejectedReason } =
+      req.body as CreateClaimBody;
     // ✅ express-fileupload: req.files?.file 가 UploadedFile 또는 UploadedFile[] 가능
     const input = (req.files as any)?.file as
       | UploadedFile
@@ -139,13 +140,14 @@ claimRouter.post("/", async (req: AuthedRequest, res, next) => {
         details,
         productDescriptionMd: policy.product.descriptionMd,
         payoutDropsSnapshot: policy.product.payoutDrops,
+        rejectedReason:
+          rejectedReason && rejectedReason.trim() !== ""
+            ? rejectedReason.trim()
+            : null, // ✅ 저장
+        // status는 기본 SUBMITTED (스키마 default) 유지
       },
       select: { id: true },
     });
-
-    // // AI / 파트너 연동 제외
-    // const ai = await evaluateOCR({ claimId: created.id, imageUrl: evidenceUrl });
-    // ...
 
     res.status(201).json({ claimId: created.id, status: "SUBMITTED" });
   } catch (e) {

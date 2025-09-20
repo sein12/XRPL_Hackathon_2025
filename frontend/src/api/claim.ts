@@ -1,9 +1,9 @@
 // src/api/claim.ts
+import type { AiDecision } from "@/types/claim";
 import { api } from "./axios";
 import type { AxiosProgressEvent } from "axios";
 
 /** ===== 공통 타입 ===== */
-export type AiDecision = "approve" | "reject" | "manual";
 export type ClaimStatus =
   | "SUBMITTED"
   | "APPROVED"
@@ -80,6 +80,8 @@ export async function createClaim(
     incidentDate: string;
     details: string;
     file: File;
+    rejectedReason: string;
+    aiDecision: AiDecision;
   },
   opts?: { onUploadProgress?: (p: AxiosProgressEvent) => void }
 ) {
@@ -88,6 +90,8 @@ export async function createClaim(
   form.append("incidentDate", params.incidentDate);
   form.append("details", params.details);
   form.append("file", params.file); // 필드명 'file' 중요!
+  form.append("rejectedReason", params.rejectedReason);
+  form.append("aiDecision", params.aiDecision);
 
   const { data } = await api.post("/claims", form, {
     // ❗ json 기본 헤더를 덮어쓰기 (또는 아예 헤더를 생략해도 브라우저가 자동 설정)

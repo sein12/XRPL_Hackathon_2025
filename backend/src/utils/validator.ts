@@ -19,7 +19,7 @@ export const signupSchema = z
       .transform((v) => v || null),
 
     // ✅ 추가: walletAddr
-    walletAddr: z.string().min(1).max(32),
+    walletAddr: z.string().min(1).max(64),
   })
   .refine((d) => d.password === d.passwordConfirm, {
     path: ["passwordConfirm"],

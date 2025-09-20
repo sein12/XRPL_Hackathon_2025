@@ -6,6 +6,7 @@ import type { Product } from "@/types/product";
 import type { Policy } from "@/types/contract";
 import { fetchProducts } from "@/api/product";
 import { createPolicy } from "@/api/contract"; // ✅ 없으면 만들어서 사용(아래 주석 참고)
+import { createEscrow } from "@/api/xrpl"; // ✅ 없으면 만들어서 사용(아래 주석 참고)
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +14,9 @@ import { Badge } from "@/components/ui/badge";
 function formatXrpFromDrops(d: string | number | undefined) {
   if (d == null) return "-";
   const drops = typeof d === "number" ? d : Number(d);
-  return (
-    (drops / 1_000_000).toLocaleString(undefined, {
-      maximumFractionDigits: 6,
-    }) + " XRP"
-  );
+  return (drops / 1_000_000).toLocaleString(undefined, {
+    maximumFractionDigits: 6,
+  });
 }
 
 export default function ProductDetailPage() {
@@ -58,9 +57,10 @@ export default function ProductDetailPage() {
     if (!product) return;
     try {
       setSubmitting(true);
-      // 서버에 정책(계약) 생성
-      // createPolicy(productId) 시그니처는 프로젝트에 맞게 구현
       const _policy: Policy = await createPolicy(product.id);
+      const escrow = await createEscrow(
+        formatXrpFromDrops(product.premiumDrops)
+      );
       // 가입 완료 후 계약 목록으로 이동
       nav("/dashboard/contracts", { replace: true });
     } catch (e: any) {
@@ -102,13 +102,13 @@ export default function ProductDetailPage() {
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Premium Drops</span>
             <span className=" text-sm">
-              {formatXrpFromDrops(product.premiumDrops)}
+              {formatXrpFromDrops(product.premiumDrops)} XRP
             </span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Payout Drops</span>
             <span className=" text-sm">
-              {formatXrpFromDrops(product.payoutDrops)}
+              {formatXrpFromDrops(product.payoutDrops)} XRP
             </span>
           </div>
           <div className="flex flex-col gap-0.5">
