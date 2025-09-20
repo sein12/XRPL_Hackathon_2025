@@ -28,7 +28,7 @@ export default function ClaimFormPage() {
 
   const [file, setFile] = useState<File | null>(null);
 
-  // 업로드 상태
+  // Upload state
   const [submitting, setSubmitting] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
 
@@ -139,7 +139,9 @@ export default function ClaimFormPage() {
 
   return (
     <ClaimStepLayout
-      primaryLabel={step === 0 ? "다음" : submitting ? "업로드 중…" : "완료"}
+      primaryLabel={
+        step === 0 ? "Next" : submitting ? "Uploading…" : "Complete"
+      }
       onPrimary={onPrimary}
       disabled={step === 0 ? !canNext : submitting}
       onBack={onBack}
@@ -152,7 +154,7 @@ export default function ClaimFormPage() {
           {submitting && (
             <div className="space-y-2">
               <div className="text-sm text-muted-foreground">
-                업로드 진행률: {uploadPct}%
+                Upload progress: {uploadPct}%
               </div>
               <Progress value={uploadPct} />
             </div>

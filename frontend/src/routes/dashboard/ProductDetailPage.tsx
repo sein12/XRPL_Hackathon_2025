@@ -5,19 +5,11 @@ import EmptyState from "@/components/common/EmptyState";
 import type { Product } from "@/types/product";
 import type { Policy } from "@/types/contract";
 import { fetchProducts } from "@/api/product";
-import { createPolicy } from "@/api/contract"; // ✅ 없으면 만들어서 사용(아래 주석 참고)
-import { createEscrow } from "@/api/xrpl"; // ✅ 없으면 만들어서 사용(아래 주석 참고)
+import { createPolicy } from "@/api/contract"; // ✅ implement if not existing
+import { createEscrow } from "@/api/xrpl"; // ✅ implement if not existing
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-
-function formatXrpFromDrops(d: string | number | undefined) {
-  if (d == null) return "-";
-  const drops = typeof d === "number" ? d : Number(d);
-  return (drops / 1_000_000).toLocaleString(undefined, {
-    maximumFractionDigits: 6,
-  });
-}
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,11 +26,11 @@ export default function ProductDetailPage() {
     (async () => {
       try {
         setLoading(true);
-        const res = await fetchProducts(); // 단건 API 없으면 리스트에서 찾기
+        const res = await fetchProducts(); // no single API → find in list
         if (!mounted) return;
         setProducts(res ?? []);
       } catch (e: any) {
-        setErr(e?.response?.data?.error ?? "상품을 불러오지 못했습니다.");
+        setErr(e?.response?.data?.error ?? "Failed to load product.");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -57,14 +49,12 @@ export default function ProductDetailPage() {
     if (!product) return;
     try {
       setSubmitting(true);
-      const escrow = await createEscrow(
-        formatXrpFromDrops(product.premiumDrops)
-      );
+      const escrow = await createEscrow(product.premiumDrops);
       const _policy: Policy = await createPolicy(product.id, escrow.escrow_id);
-      // 가입 완료 후 계약 목록으로 이동
+      // navigate to contract list after joining
       nav("/dashboard/contracts", { replace: true });
     } catch (e: any) {
-      alert(e?.response?.data?.error ?? "가입에 실패했습니다.");
+      alert(e?.response?.data?.error ?? "Failed to join the product.");
     } finally {
       setSubmitting(false);
       setConfirmOpen(false);
@@ -82,8 +72,8 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (err) return <EmptyState title="오류" desc={err} />;
-  if (!product) return <EmptyState title="상품을 찾을 수 없어요" />;
+  if (err) return <EmptyState title="Error" desc={err} />;
+  if (!product) return <EmptyState title="Product not found" />;
 
   return (
     <div className="px-5 pt-16 space-y-6">
@@ -101,15 +91,11 @@ export default function ProductDetailPage() {
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Premium Drops</span>
-            <span className=" text-sm">
-              {formatXrpFromDrops(product.premiumDrops)} XRP
-            </span>
+            <span className=" text-sm">{product.premiumDrops} KRW</span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Payout Drops</span>
-            <span className=" text-sm">
-              {formatXrpFromDrops(product.payoutDrops)} XRP
-            </span>
+            <span className=" text-sm">{product.payoutDrops} KRW</span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Validity Days</span>
@@ -133,16 +119,16 @@ export default function ProductDetailPage() {
           onClick={() => setConfirmOpen(true)}
           disabled={submitting}
         >
-          {submitting ? "처리 중..." : "보험 가입하기"}
+          {submitting ? "Processing..." : "Join Insurance"}
         </Button>
       </div>
 
-      {/* 확인 다이얼로그 (공용 컴포넌트 사용) */}
+      {/* Confirm Dialog */}
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="보험 가입 확인"
-        description={`"${product.name}"\n상품을 가입하시겠어요?`}
+        title="Confirm Insurance Enrollment"
+        description={`Do you want to enroll in "${product.name}"?`}
         onConfirm={onConfirmJoin}
         disabled={submitting}
       />

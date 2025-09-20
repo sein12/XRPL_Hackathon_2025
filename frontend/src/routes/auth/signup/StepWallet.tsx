@@ -30,17 +30,17 @@ export default function StepWallet() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // 발급/수락 진행 상태
-  const [open, setOpen] = useState(false); // 수락 모달
+  // Issuance / acceptance state
+  const [open, setOpen] = useState(false); // accept modal
   const [issuedHash, setIssuedHash] = useState<string | undefined>(undefined);
   const [issued, setIssued] = useState(false);
   const [accepted, setAccepted] = useState(false);
 
-  // 1) Credential 발급 (Create)
+  // 1) Issue credential (Create)
   const onIssue = async () => {
     setErr("");
     if (!state.userSeed) {
-      setErr("Seed를 입력해주세요. (Devnet / 데모 전용)");
+      setErr("Please enter your Seed. (Devnet / demo only)");
       return;
     }
     setBusy(true);
@@ -48,19 +48,19 @@ export default function StepWallet() {
       const res = await issueCredential({
         userSeed: state.userSeed,
         type: "KYC",
-        expirationSec: 60 * 60, // 1시간
+        expirationSec: 60 * 60, // 1 hour
       });
       setIssuedHash(res?.summary?.hash);
       setIssued(true);
-      setOpen(true); // 발급 성공 → 수락 모달 오픈
+      setOpen(true); // open accept modal after successful issuance
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? "Credential 발급에 실패했습니다.");
+      setErr(e?.response?.data?.error ?? "Failed to issue credential.");
     } finally {
       setBusy(false);
     }
   };
 
-  // 2) 모달에서 "수락" 눌렀을 때 (Accept)
+  // 2) Accept the issued credential
   const onAccept = async () => {
     setBusy(true);
     try {
@@ -68,22 +68,22 @@ export default function StepWallet() {
       setAccepted(true);
       setOpen(false);
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? "Credential 수락에 실패했습니다.");
+      setErr(e?.response?.data?.error ?? "Failed to accept credential.");
     } finally {
       setBusy(false);
     }
   };
 
-  // 3) 회원 생성 완료
+  // 3) Complete signup
   const onComplete = async () => {
     setErr("");
     if (state.password !== state.passwordConfirm) {
-      setErr("비밀번호가 일치하지 않습니다.");
+      setErr("Passwords do not match.");
       return;
     }
-    // (선택) 수락 완료를 강제하려면 아래 조건 유지
+    // (Optional) enforce acceptance before signup
     if (!accepted) {
-      setErr("Credential 수락을 완료해주세요.");
+      setErr("Please complete credential acceptance.");
       return;
     }
 
@@ -97,10 +97,10 @@ export default function StepWallet() {
         passwordConfirm: state.passwordConfirm,
         walletAddr: state.walletAddr || null,
       });
-      reset(); // 폼 상태 초기화
+      reset(); // reset signup form state
       nav("/signup/complete");
     } catch (e: any) {
-      setErr(e?.response?.data?.error ?? "회원가입에 실패했습니다.");
+      setErr(e?.response?.data?.error ?? "Failed to sign up.");
     } finally {
       setBusy(false);
     }
@@ -108,7 +108,7 @@ export default function StepWallet() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 지갑 주소 */}
+      {/* Wallet address */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="wallet">Wallet Address</Label>
         <Input
@@ -119,12 +119,12 @@ export default function StepWallet() {
         />
       </div>
 
-      {/* (옵션) 지갑 연동 버튼 */}
+      {/* Optional: connect wallet button */}
       {/* <Button variant="secondary" className="w-full" type="button">
         Connect to Xaman
       </Button> */}
 
-      {/* Seed 입력 (데모용) */}
+      {/* Seed input (demo use only) */}
       <div className="flex flex-col gap-2">
         <Label htmlFor="seed">User Seed (Devnet / Demo)</Label>
         <Input
@@ -141,11 +141,12 @@ export default function StepWallet() {
             onClick={onIssue}
             disabled={busy}
           >
-            Credential 발급
+            Issue Credential
           </Button>
           {issued && (
             <span className="text-xs text-muted-foreground">
-              발급 완료{issuedHash ? ` • ${issuedHash.slice(0, 8)}…` : ""}
+              Issued
+              {issuedHash ? ` • ${issuedHash.slice(0, 8)}…` : ""}
             </span>
           )}
         </div>
@@ -161,13 +162,13 @@ export default function StepWallet() {
         Complete
       </Button>
 
-      {/* 수락 확인 모달 */}
+      {/* Acceptance confirmation modal */}
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Credential을 수락하시겠습니까?</AlertDialogTitle>
+            <AlertDialogTitle>Accept this credential?</AlertDialogTitle>
             <AlertDialogDescription>
-              원장에 발급 트랜잭션이 제출되었습니다.
+              The issuance transaction has been submitted to the ledger.
               {issuedHash ? (
                 <>
                   <br />
@@ -178,9 +179,9 @@ export default function StepWallet() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>취소</AlertDialogCancel>
+            <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={onAccept} disabled={busy}>
-              수락
+              Accept
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -39,6 +39,20 @@ function parseIncidentDate(input?: string): Date | null {
 }
 
 /** ================= DTO ================= */
+
+function mapAgentDecisionToStatus(decision?: string) {
+  switch (decision) {
+    case "Accepted":
+      return "APPROVED" as const;
+    case "Declined":
+      return "REJECTED" as const;
+    case "Escalate to human":
+      return "MANUAL" as const;
+    default:
+      return "SUBMITTED" as const; // Unknown 등
+  }
+}
+
 type ClaimRow = Prisma.ClaimGetPayload<{
   include: { policy: { include: { product: true } } };
 }>;
@@ -60,9 +74,18 @@ type ClaimDTO = {
   productDescriptionMd: string;
   payoutDropsSnapshot: string;
   policyEscrowId: string | null; // ✅ 추가
+
+  productId: string; // 상품 id
+  productName: string; // 상품명
+  productCategory: string; // enum → string
+  productPremiumDrops: string; // BigInt → string (필요하면)
+  productPayoutDrops: string; // BigInt → string (필요하면)
+  productShortDescription: string;
+  productCoverageSummary: string;
 };
 
 function toClaimDTO(row: ClaimRow): ClaimDTO {
+  const p = row.policy.product;
   return {
     id: row.id,
     policyId: row.policyId,
@@ -70,16 +93,27 @@ function toClaimDTO(row: ClaimRow): ClaimDTO {
     incidentDate: row.incidentDate.toISOString(),
     details: row.details,
     evidenceUrl: row.evidenceUrl,
-    aiDecision: row.aiDecision ?? null, // 그대로 문자열
+    aiDecision: row.aiDecision ?? null,
     aiRaw: row.aiRaw ?? undefined,
     payoutAt: row.payoutAt ? row.payoutAt.toISOString() : null,
     payoutTxHash: row.payoutTxHash ?? null,
     payoutMeta: row.payoutMeta ?? undefined,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+
     productDescriptionMd: row.productDescriptionMd,
     payoutDropsSnapshot: row.payoutDropsSnapshot.toString(),
+
     policyEscrowId: row.policy.escrowId ?? null,
+
+    // 🔽 product 정보 노출
+    productId: p.id,
+    productName: p.name,
+    productCategory: String(p.category),
+    productPremiumDrops: p.premiumDrops.toString(),
+    productPayoutDrops: p.payoutDrops.toString(),
+    productShortDescription: p.shortDescription,
+    productCoverageSummary: p.coverageSummary,
   };
 }
 
@@ -155,17 +189,21 @@ claimRouter.post("/", async (req: AuthedRequest, res, next) => {
         rejectedReason: rejectedReason?.trim() || null,
       },
       include: {
-        // ✅ 변경: include로 policy.escrowId를 가져오자
         policy: {
-          select: { escrowId: true },
+          select: {
+            escrowId: true,
+            product: { select: { id: true, name: true } }, // 🔽 상품명 포함
+          },
         },
       },
     });
 
     res.status(201).json({
       claimId: created.id,
-      status: "SUBMITTED",
+      status: created.status,
       policyEscrowId: created.policy.escrowId ?? null,
+      productId: created.policy.product.id, // 🔽 추가
+      productName: created.policy.product.name, // 🔽 추가
     });
   } catch (e) {
     next(e);

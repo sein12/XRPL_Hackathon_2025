@@ -27,7 +27,7 @@ export default function ClaimStepLayout({
           <ChevronLeft className="w-5 h-5" />
         </Button>
 
-        <h1 className="text-xl font-semibold">보험금 청구</h1>
+        <h1 className="text-xl font-semibold">Claim Insurance</h1>
       </header>
 
       {/* 본문 */}

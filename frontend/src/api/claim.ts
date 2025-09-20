@@ -38,6 +38,15 @@ export interface Claim {
   /** 시스템 */
   createdAt: string; // ISO
   updatedAt: string; // ISO
+
+  policyEscrowId: string | null;
+  productId: string; // 상품 id
+  productName: string; // 상품명
+  productCategory: string; // enum → string
+  productPremiumDrops: string; // BigInt → string (필요하면)
+  productPayoutDrops: string; // BigInt → string (필요하면)
+  productShortDescription: string;
+  productCoverageSummary: string;
 }
 
 /** 목록 응답 (백엔드: { items, nextCursor }) */
@@ -116,9 +125,10 @@ export async function createClaimWithFormData(
   return data;
 }
 
-/** (선택) drops → XRP 표시용 헬퍼 */
-export function dropsToXrp(dropsStr: string): number {
-  // UI 표시에만 사용 (금액 계산 로직은 BigInt 기반 서버에서 처리 권장)
-  const n = Number(dropsStr);
-  return Number.isFinite(n) ? n / 1_000_000 : 0;
+export async function updateClaimAi(
+  id: string,
+  params: { decision?: string; reason?: string; raw?: unknown }
+) {
+  const { data } = await api.patch(`/claims/${id}/ai`, params);
+  return data as Claim; // 서버에서 toClaimDTO 반환
 }

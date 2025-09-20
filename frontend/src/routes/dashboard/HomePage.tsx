@@ -124,19 +124,6 @@ export default function HomePage() {
           )}
         </section>
       </div>
-
-      <Button
-        variant="default"
-        type="button"
-        className="w-full text-xs text-muted-foreground"
-        onClick={() => {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          localStorage.removeItem("authUser");
-        }}
-      >
-        개발용: 인증 초기화(토큰 삭제)
-      </Button>
     </div>
   );
 }

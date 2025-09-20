@@ -85,7 +85,7 @@ externalRouter.get("/address/client", async (req, res, next) => {
 externalRouter.post("/escrow/create", async (req, res, next) => {
   try {
     const r = await axios.post(`${BASE}/escrow/create`, null, {
-      params: { amount_xrp: req.query.amount_xrp },
+      params: { amount_krw: req.query.amount_krw },
       headers: buildHeaders(req),
     });
     res.status(r.status).json(r.data);

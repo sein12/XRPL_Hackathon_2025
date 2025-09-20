@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import type { Policy } from "@/types/contract";
-import { dropsToXrp } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 
 export default function PolicyCarouselCard({
@@ -28,7 +27,7 @@ export default function PolicyCarouselCard({
 
           <div className="text-neutral-300">Premium</div>
           <div className="text-black">
-            {dropsToXrp(policy.product?.premiumDrops || 0)} XRP
+            {policy.product?.premiumDrops || 0} KRW
           </div>
 
           <div className="text-neutral-300">Expiration Date</div>

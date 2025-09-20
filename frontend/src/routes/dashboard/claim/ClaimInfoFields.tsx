@@ -10,7 +10,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format, parse, isValid } from "date-fns";
-import { ko } from "date-fns/locale";
+import { enUS } from "date-fns/locale"; // locale 변경
 import { cn } from "@/lib/utils";
 import type { ClaimInfoFormData } from "@/types/claim";
 import { useState } from "react";
@@ -26,7 +26,7 @@ export default function ClaimInfoFields({
   const set = (k: keyof ClaimInfoFormData) => (v: string) =>
     onChange({ ...value, [k]: v });
 
-  // "yyyy-MM-dd" -> Date (UTC 파싱 이슈 피하려고 parse 사용)
+  // "yyyy-MM-dd" -> Date (avoid UTC parsing issues by using parse)
   const parsedDate = value.incidentDate
     ? parse(value.incidentDate, "yyyy-MM-dd", new Date())
     : undefined;
@@ -40,7 +40,7 @@ export default function ClaimInfoFields({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label>사고 일자</Label>
+        <Label>Incident Date</Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -52,16 +52,16 @@ export default function ClaimInfoFields({
             >
               <CalendarIcon className="h-4 w-4" />
               {parsedDate && isValid(parsedDate) ? (
-                format(parsedDate, "yyyy-MM-dd", { locale: ko })
+                format(parsedDate, "yyyy-MM-dd", { locale: enUS })
               ) : (
-                <span>날짜 선택</span>
+                <span>Select date</span>
               )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="p-0 w-auto" align="start">
             <Calendar
               mode="single"
-              locale={ko}
+              locale={enUS}
               selected={parsedDate}
               onSelect={handleDateSelect}
               disabled={(date) => date > new Date()}
@@ -71,7 +71,7 @@ export default function ClaimInfoFields({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label>상세 내용</Label>
+        <Label>Details</Label>
         <Textarea
           rows={4}
           value={value.details}

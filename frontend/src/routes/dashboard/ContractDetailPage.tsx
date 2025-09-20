@@ -12,15 +12,6 @@ import type { Policy } from "@/types/contract";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
-function formatXrpFromDrops(d: string | number | undefined) {
-  const drops = typeof d === "number" ? d : Number(d);
-  return (
-    (drops / 1_000_000).toLocaleString(undefined, {
-      maximumFractionDigits: 6,
-    }) + " XRP"
-  );
-}
-
 const statusColor: Record<
   Policy["status"],
   "default" | "secondary" | "destructive" | "outline"
@@ -93,15 +84,11 @@ export default function ContractDetailPage() {
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Premium Drops</span>
-            <span className=" text-sm">
-              {formatXrpFromDrops(policy.product.premiumDrops)}
-            </span>
+            <span className=" text-sm">{policy.product.premiumDrops}</span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Payout Drops</span>
-            <span className=" text-sm">
-              {formatXrpFromDrops(policy.product.payoutDrops)}
-            </span>
+            <span className=" text-sm">{policy.product.payoutDrops}</span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-bold">Description</span>

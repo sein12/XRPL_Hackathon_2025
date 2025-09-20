@@ -40,6 +40,7 @@ export async function getInsurerBalance() {
   }>("/balances/insurer");
   return data;
 }
+
 export async function getClientBalance() {
   const { data } = await ext.get<{
     client_address: string;
@@ -49,11 +50,11 @@ export async function getClientBalance() {
 }
 
 /** 5) Escrow */
-export async function createEscrow(amount_xrp: string) {
+export async function createEscrow(amount_krw: string) {
   const { data } = await ext.post<{ escrow_id: string; message: string }>(
     "/escrow/create",
     null,
-    { params: { amount_xrp } }
+    { params: { amount_krw } }
   );
   return data;
 }

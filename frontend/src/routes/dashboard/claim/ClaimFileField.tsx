@@ -14,7 +14,7 @@ export default function ClaimFileField({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label>파일 첨부</Label>
+        <Label>Attach File</Label>
         <Input
           type="file"
           accept="application/pdf,image/png,image/jpeg"
@@ -22,7 +22,7 @@ export default function ClaimFileField({
           className="cursor-pointer text-sm"
         />
         <p className="text-xs text-muted-foreground">
-          pdf, jpeg, jpg, png 형식의 파일 첨부
+          Attach a file in pdf, jpeg, jpg, or png format
         </p>
       </div>
 
@@ -30,7 +30,7 @@ export default function ClaimFileField({
 
       {file && (
         <div className="flex flex-col gap-2">
-          <Label>첨부된 파일</Label>
+          <Label>Attached File</Label>
           <div className="flex items-center justify-between px-3 py-2 rounded-md border text-sm">
             <span className="truncate">{file.name}</span>
             <Button
@@ -39,7 +39,7 @@ export default function ClaimFileField({
               variant="ghost"
               onClick={() => onChange(null)}
             >
-              제거
+              Remove
             </Button>
           </div>
         </div>

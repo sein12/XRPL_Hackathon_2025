@@ -51,9 +51,11 @@ export default function ContractListPage() {
   }
 
   return (
-    <div className="px-5 pt-16 space-y-6">
-      <h1 className="text-2xl font-semibold">Insurance Products</h1>
-
+    <div className="px-5 pt-16 space-y-5">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-semibold">My Contracts</h1>
+        <span className="text-gray-400">Browse your insurance contracts.</span>
+      </div>
       <div className="flex flex-col gap-2">
         {policies.map((p) => (
           <div key={p.id}>
