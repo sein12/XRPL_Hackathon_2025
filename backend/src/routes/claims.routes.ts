@@ -1,7 +1,11 @@
 // src/routes/claims.routes.ts
 import { Router } from "express";
 import { prisma } from "../repositories/prisma";
-import { ClaimStatus, Prisma } from "@prisma/client";
+import {
+  ClaimStatus,
+  Prisma,
+  AiDecision as PrismaAiDecision,
+} from "@prisma/client";
 import { authGuard, AuthedRequest } from "../middlewares/authGuard";
 // import { evaluateOCR } from "../services/ai.service";
 import { saveUploadedFile } from "../services/storage.service";
@@ -13,11 +17,13 @@ import type { UploadedFile } from "express-fileupload";
 export const claimRouter = Router();
 claimRouter.use(authGuard);
 
+// 요청 바디에 정확한 타입 지정
 type CreateClaimBody = {
   policyId?: string;
   incidentDate?: string;
   details?: string;
   rejectedReason?: string;
+  aiDecision?: string; // 그대로 문자열
 };
 
 const ALLOWED_MIME = new Set(["application/pdf", "image/png", "image/jpeg"]);
@@ -44,7 +50,7 @@ type ClaimDTO = {
   incidentDate: string; // ISO
   details: string;
   evidenceUrl: string;
-  aiDecision?: "approve" | "reject" | "manual" | null;
+  aiDecision?: string | null;
   aiRaw?: unknown;
   payoutAt?: string | null;
   payoutTxHash?: string | null;
@@ -63,7 +69,7 @@ function toClaimDTO(row: ClaimRow): ClaimDTO {
     incidentDate: row.incidentDate.toISOString(),
     details: row.details,
     evidenceUrl: row.evidenceUrl,
-    aiDecision: row.aiDecision ?? null,
+    aiDecision: row.aiDecision ?? null, // 그대로 문자열
     aiRaw: row.aiRaw ?? undefined,
     payoutAt: row.payoutAt ? row.payoutAt.toISOString() : null,
     payoutTxHash: row.payoutTxHash ?? null,
@@ -97,9 +103,19 @@ claimRouter.get("/", async (req: AuthedRequest, res, next) => {
 claimRouter.post("/", async (req: AuthedRequest, res, next) => {
   try {
     const userId = req.user!.sub;
-    const { policyId, incidentDate, details, rejectedReason } =
+    const { policyId, incidentDate, details, rejectedReason, aiDecision } =
       req.body as CreateClaimBody;
-    // ✅ express-fileupload: req.files?.file 가 UploadedFile 또는 UploadedFile[] 가능
+
+    // 필수 값 검증은 그대로 유지
+    if (!policyId) return res.status(400).json({ error: "policyId required" });
+    if (!incidentDate)
+      return res.status(400).json({ error: "incidentDate required" });
+    if (!details || !details.trim())
+      return res.status(400).json({ error: "details required" });
+    if (!aiDecision)
+      return res.status(400).json({ error: "aiDecision required" });
+
+    // 파일 검증/저장 동일
     const input = (req.files as any)?.file as
       | UploadedFile
       | UploadedFile[]
@@ -107,13 +123,10 @@ claimRouter.post("/", async (req: AuthedRequest, res, next) => {
     const file: UploadedFile | undefined = Array.isArray(input)
       ? input[0]
       : input;
-
-    if (!policyId) return res.status(400).json({ error: "policyId required" });
-    if (!incidentDate)
-      return res.status(400).json({ error: "incidentDate required" });
-    if (!details || !details.trim())
-      return res.status(400).json({ error: "details required" });
     if (!file) return res.status(400).json({ error: "file required" });
+    if (file.mimetype && !ALLOWED_MIME.has(file.mimetype)) {
+      return res.status(400).json({ error: "unsupported file type" });
+    }
 
     const policy = await prisma.policy.findFirst({
       where: { id: policyId, userId },
@@ -125,13 +138,9 @@ claimRouter.post("/", async (req: AuthedRequest, res, next) => {
     if (!incidentAt)
       return res.status(400).json({ error: "Invalid incidentDate" });
 
-    if (file.mimetype && !ALLOWED_MIME.has(file.mimetype)) {
-      return res.status(400).json({ error: "unsupported file type" });
-    }
-
-    // ✅ UploadedFile: data(Buffer), mimetype, name
     const evidenceUrl = await saveUploadedFile(file);
 
+    // ✅ aiDecision을 문자열 그대로 저장
     const created = await prisma.claim.create({
       data: {
         policyId,
@@ -140,11 +149,8 @@ claimRouter.post("/", async (req: AuthedRequest, res, next) => {
         details,
         productDescriptionMd: policy.product.descriptionMd,
         payoutDropsSnapshot: policy.product.payoutDrops,
-        rejectedReason:
-          rejectedReason && rejectedReason.trim() !== ""
-            ? rejectedReason.trim()
-            : null, // ✅ 저장
-        // status는 기본 SUBMITTED (스키마 default) 유지
+        aiDecision, // 그대로
+        rejectedReason: rejectedReason?.trim() || null,
       },
       select: { id: true },
     });

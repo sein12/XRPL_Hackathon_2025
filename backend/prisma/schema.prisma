@@ -118,7 +118,7 @@ model Claim {
   payoutDropsSnapshot  BigInt          // Product.payoutDrops 스냅샷(drops)
 
   evidenceUrl    String
-  aiDecision     AiDecision?
+  aiDecision     String?
   aiRaw          Json?
 
   payoutAt       DateTime?
