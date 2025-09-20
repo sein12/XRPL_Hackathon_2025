@@ -1,6 +1,5 @@
 // src/routes/dashboard/claim/ClaimStepLayout.tsx
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { ChevronLeft } from "lucide-react";
 
 export default function ClaimStepLayout({

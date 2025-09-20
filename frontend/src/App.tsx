@@ -76,6 +76,10 @@ export default function App() {
                 <Route index element={<ClaimsPage />} />
                 <Route path="list" element={<ClaimListPage />} />
                 <Route path="new/:policyId" element={<ClaimFormPage />} />
+                <Route
+                  path="new/:policyId/completed"
+                  element={<ClaimComplete />}
+                />
               </Route>
 
               {/* 프로필 */}

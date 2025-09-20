@@ -10,7 +10,6 @@ import { createClaim } from "@/api/claim";
 import type { PolicyDetail } from "@/types/contract";
 import type { ClaimInfoFormData } from "@/types/claim";
 import { Progress } from "@/components/ui/progress";
-import { Label } from "@/components/ui/label";
 
 export default function ClaimFormPage() {
   const { policyId } = useParams<{ policyId: string }>();
@@ -46,15 +45,6 @@ export default function ClaimFormPage() {
         const data = await getPolicyDetail(policyId);
         if (!mounted) return;
         setPolicy(data);
-
-        // (선택) 동일 계약 청구 폼 값 복구 - 이전에 입력하던 값 유지
-        const saved = sessionStorage.getItem(`claim:info:${policyId}`);
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved) as ClaimInfoFormData;
-            setInfo(parsed);
-          } catch {}
-        }
       } catch (e: any) {
         setErr(e?.response?.data?.error ?? "Failed to load policy.");
       } finally {
@@ -99,22 +89,29 @@ export default function ClaimFormPage() {
       setSubmitting(true);
       setUploadPct(0);
 
-      const created = await createClaim(policy.id, file, {
-        onUploadProgress: (e) => {
-          const pct =
-            e.progress != null
-              ? Math.round(e.progress * 100)
-              : e.total
-              ? Math.round((e.loaded / e.total) * 100)
-              : 0;
-          setUploadPct(pct);
+      const created = await createClaim(
+        {
+          policyId: policy.id,
+          incidentDate: info.incidentDate, // "yyyy-MM-dd"
+          details: info.details,
+          file,
         },
+        {
+          onUploadProgress: (e) => {
+            const pct =
+              e.progress != null
+                ? Math.round(e.progress * 100)
+                : e.total
+                ? Math.round((e.loaded / e.total) * 100)
+                : 0;
+            setUploadPct(pct);
+          },
+        }
+      );
+
+      nav(`/dashboard/claims/new/${created.claimId}/completed`, {
+        replace: true,
       });
-
-      // 완료 후 폼 캐시 제거
-      sessionStorage.removeItem(`claim:info:${policyId}`);
-
-      nav(`/dashboard/claims/${created.claimId}`, { replace: true });
     } catch (e: any) {
       alert(e?.response?.data?.error ?? "Failed to submit claim");
     } finally {
@@ -124,10 +121,10 @@ export default function ClaimFormPage() {
 
   const onBack = () => {
     if (step === 1) {
-      setStep(0); // 이전 단계로
+      setStep(0);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      nav(-1); // 목록 등 이전 페이지로
+      nav(-1);
     }
   };
 
@@ -143,6 +140,14 @@ export default function ClaimFormPage() {
       ) : (
         <>
           <ClaimFileField file={file} onChange={setFile} />
+          {submitting && (
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                업로드 진행률: {uploadPct}%
+              </div>
+              <Progress value={uploadPct} />
+            </div>
+          )}
         </>
       )}
     </ClaimStepLayout>

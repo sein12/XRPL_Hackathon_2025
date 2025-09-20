@@ -1,18 +1,21 @@
-// src/routes/claims.routes.ts (파일명은 기존과 동일하게)
+// src/routes/claims.routes.ts
 import { Router } from "express";
 import { prisma } from "../repositories/prisma";
-import { ClaimStatus } from "@prisma/client";
+import { ClaimStatus, Prisma } from "@prisma/client";
 import { authGuard, AuthedRequest } from "../middlewares/authGuard";
-import { evaluateOCR } from "../services/ai.service";
+// import { evaluateOCR } from "../services/ai.service";
 import { saveUploadedFile } from "../services/storage.service";
 import { parse } from "date-fns";
+
+// ✅ express-fileupload 타입
+import type { UploadedFile } from "express-fileupload";
 
 export const claimRouter = Router();
 claimRouter.use(authGuard);
 
 type CreateClaimBody = {
   policyId?: string;
-  incidentDate?: string; // yyyy-MM-dd 혹은 ISO 문자열
+  incidentDate?: string;
   details?: string;
 };
 
@@ -21,12 +24,57 @@ const ALLOWED_MIME = new Set(["application/pdf", "image/png", "image/jpeg"]);
 function parseIncidentDate(input?: string): Date | null {
   if (!input) return null;
   if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
-    const dt = parse(input, "yyyy-MM-dd", new Date()); // 로컬 타임 기준
+    const dt = parse(input, "yyyy-MM-dd", new Date());
     return Number.isNaN(dt.getTime()) ? null : dt;
   }
   const dt = new Date(input);
   return Number.isNaN(dt.getTime()) ? null : dt;
 }
+
+/** ================= DTO ================= */
+type ClaimRow = Prisma.ClaimGetPayload<{
+  include: { policy: { include: { product: true } } };
+}>;
+
+type ClaimDTO = {
+  id: string;
+  policyId: string;
+  status: keyof typeof ClaimStatus;
+  incidentDate: string; // ISO
+  details: string;
+  evidenceUrl: string;
+  aiDecision?: "approve" | "reject" | "manual" | null;
+  aiRaw?: unknown;
+  payoutAt?: string | null;
+  payoutTxHash?: string | null;
+  payoutMeta?: unknown;
+  createdAt: string;
+  updatedAt: string;
+  productDescriptionMd: string;
+  payoutDropsSnapshot: string;
+};
+
+function toClaimDTO(row: ClaimRow): ClaimDTO {
+  return {
+    id: row.id,
+    policyId: row.policyId,
+    status: row.status,
+    incidentDate: row.incidentDate.toISOString(),
+    details: row.details,
+    evidenceUrl: row.evidenceUrl,
+    aiDecision: row.aiDecision ?? null,
+    aiRaw: row.aiRaw ?? undefined,
+    payoutAt: row.payoutAt ? row.payoutAt.toISOString() : null,
+    payoutTxHash: row.payoutTxHash ?? null,
+    payoutMeta: row.payoutMeta ?? undefined,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    productDescriptionMd: row.productDescriptionMd,
+    payoutDropsSnapshot: row.payoutDropsSnapshot.toString(),
+  };
+}
+
+/** ============== Routes ============== */
 
 // 목록
 claimRouter.get("/", async (req: AuthedRequest, res, next) => {
@@ -36,22 +84,29 @@ claimRouter.get("/", async (req: AuthedRequest, res, next) => {
       where: { policy: { userId } },
       orderBy: { createdAt: "desc" },
       take: 50,
-      // 필요하면 select로 필드 제한 가능
+      include: { policy: { include: { product: true } } },
     });
-    res.json({ items, nextCursor: null });
+    res.json({ items: items.map(toClaimDTO), nextCursor: null });
   } catch (e) {
     next(e);
   }
 });
 
-// 생성 + AI 평가 (지급은 파트너 시스템이 처리)
+// 생성 (파트너/AI 주석: 생성만 확인)
 claimRouter.post("/", async (req: AuthedRequest, res, next) => {
   try {
     const userId = req.user!.sub;
     const { policyId, incidentDate, details } = req.body as CreateClaimBody;
-    const file = (req.files as any)?.file;
 
-    // 필수값 검증
+    // ✅ express-fileupload: req.files?.file 가 UploadedFile 또는 UploadedFile[] 가능
+    const input = (req.files as any)?.file as
+      | UploadedFile
+      | UploadedFile[]
+      | undefined;
+    const file: UploadedFile | undefined = Array.isArray(input)
+      ? input[0]
+      : input;
+
     if (!policyId) return res.status(400).json({ error: "policyId required" });
     if (!incidentDate)
       return res.status(400).json({ error: "incidentDate required" });
@@ -59,67 +114,40 @@ claimRouter.post("/", async (req: AuthedRequest, res, next) => {
       return res.status(400).json({ error: "details required" });
     if (!file) return res.status(400).json({ error: "file required" });
 
-    // 정책 소유권 확인
     const policy = await prisma.policy.findFirst({
       where: { id: policyId, userId },
-      include: { user: true },
+      include: { product: true },
     });
     if (!policy) return res.status(404).json({ error: "Policy not found" });
 
-    // 날짜 파싱 (yyyy-MM-dd 안전 처리)
     const incidentAt = parseIncidentDate(incidentDate);
     if (!incidentAt)
       return res.status(400).json({ error: "Invalid incidentDate" });
 
-    // 파일 검증(선택)
-    const mimetype: string | undefined = file.mimetype || file.type;
-    if (mimetype && !ALLOWED_MIME.has(mimetype)) {
+    if (file.mimetype && !ALLOWED_MIME.has(file.mimetype)) {
       return res.status(400).json({ error: "unsupported file type" });
     }
 
-    // 저장 후 URL 획득
+    // ✅ UploadedFile: data(Buffer), mimetype, name
     const evidenceUrl = await saveUploadedFile(file);
 
-    // 청구 생성 (필수 컬럼 포함)
     const created = await prisma.claim.create({
       data: {
         policyId,
         evidenceUrl,
         incidentDate: incidentAt,
         details,
-        // status는 default: SUBMITTED
+        productDescriptionMd: policy.product.descriptionMd,
+        payoutDropsSnapshot: policy.product.payoutDrops,
       },
       select: { id: true },
     });
 
-    // AI 판독
-    const ai = await evaluateOCR({
-      claimId: created.id,
-      imageUrl: evidenceUrl,
-    });
-    const approved = ai.decision === "approve" && ai.score >= 0.8;
+    // // AI / 파트너 연동 제외
+    // const ai = await evaluateOCR({ claimId: created.id, imageUrl: evidenceUrl });
+    // ...
 
-    const newStatus: ClaimStatus = approved
-      ? ClaimStatus.APPROVED
-      : ai.decision === "reject"
-      ? ClaimStatus.REJECTED
-      : ClaimStatus.MANUAL;
-
-    await prisma.claim.update({
-      where: { id: created.id },
-      data: {
-        aiDecision: ai.decision as any,
-        aiRaw: ai as any, // 원문 보관(선택)
-        status: newStatus,
-      },
-    });
-
-    // 지급은 파트너 서비스가 처리(동기 호출 or 웹훅)
-    res.status(201).json({
-      claimId: created.id,
-      status: newStatus, // "APPROVED" | "REJECTED" | "MANUAL"
-      ai,
-    });
+    res.status(201).json({ claimId: created.id, status: "SUBMITTED" });
   } catch (e) {
     next(e);
   }
@@ -134,12 +162,12 @@ claimRouter.get("/:id", async (req: AuthedRequest, res, next) => {
 
     const c = await prisma.claim.findUnique({
       where: { id },
-      include: { policy: true },
+      include: { policy: { include: { product: true } } },
     });
     if (!c || c.policy.userId !== userId)
       return res.status(404).json({ error: "Not found" });
 
-    res.json(c);
+    res.json(toClaimDTO(c));
   } catch (e) {
     next(e);
   }

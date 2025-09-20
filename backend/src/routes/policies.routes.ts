@@ -8,13 +8,38 @@ export const policyRouter = Router();
 policyRouter.use(authGuard);
 
 /** ===== DTOs ===== */
+type FeatureItem = { title: string; body: string };
+
+function toFeatureItems(v: Prisma.JsonValue): FeatureItem[] | null {
+  if (!v) return null;
+  if (Array.isArray(v)) {
+    const arr = v as unknown[];
+    const safe = arr
+      .filter(
+        (it): it is { title: unknown; body: unknown } =>
+          !!it &&
+          typeof it === "object" &&
+          "title" in (it as any) &&
+          "body" in (it as any)
+      )
+      .map((it) => ({
+        title: String((it as any).title),
+        body: String((it as any).body),
+      }));
+    return safe.length ? safe : null;
+  }
+  return null;
+}
+
 type ProductBriefDTO = {
   id: string;
   name: string;
+  payoutDrops: string;
   premiumDrops: string; // BigInt → string
   coverageSummary: string;
   shortDescription: string;
   category: string;
+  features: FeatureItem[] | null;
   validityDays: number;
   active: boolean;
   createdAt: Date;
@@ -46,12 +71,14 @@ function toProductBriefDTO(p: PolicyRow["product"]): ProductBriefDTO {
     id: p.id,
     name: p.name,
     premiumDrops: p.premiumDrops.toString(),
+    payoutDrops: p.payoutDrops.toString(),
     coverageSummary: p.coverageSummary,
     shortDescription: p.shortDescription,
     category: p.category,
     validityDays: p.validityDays,
     active: p.active,
     createdAt: p.createdAt,
+    features: toFeatureItems(p.features),
   };
 }
 

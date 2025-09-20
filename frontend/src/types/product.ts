@@ -19,6 +19,7 @@ export type Product = {
   id: string;
   name: string;
   premiumDrops: string; // BigInt → string
+  payoutDrops: string;
   coverageSummary: string; // Prisma: String (non-null)
   shortDescription: string; // Prisma: String (non-null)
   descriptionMd: string; // Prisma: String (non-null)
@@ -35,10 +36,12 @@ export type ProductBrief = Pick<
   | "id"
   | "name"
   | "premiumDrops"
+  | "payoutDrops"
   | "coverageSummary"
   | "shortDescription"
   | "active"
   | "createdAt"
   | "category"
   | "validityDays"
+  | "features"
 >;

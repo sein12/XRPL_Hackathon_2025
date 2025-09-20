@@ -44,6 +44,8 @@ model Product {
   id               String           @id @default(cuid())
   name             String
   premiumDrops     BigInt
+  payoutDrops      BigInt          @default(0)    // 보험금 (drops, 1 XRP = 1,000,000 drops)
+
   coverageSummary  String  // 상품 목록 - 카드 ui에 보이는 설명
   shortDescription String  // 상세 보기 - 설명
   descriptionMd    String  // name, shortDescription, features 기반으로 md 텍스트 생성  
@@ -111,6 +113,9 @@ model Claim {
 
   incidentDate   DateTime    // 사고 일자
   details        String      // 상세 설명(긴 텍스트)
+
+  productDescriptionMd String          // Product.descriptionMd 스냅샷
+  payoutDropsSnapshot  BigInt          // Product.payoutDrops 스냅샷(drops)
 
   evidenceUrl    String
   aiDecision     AiDecision?
