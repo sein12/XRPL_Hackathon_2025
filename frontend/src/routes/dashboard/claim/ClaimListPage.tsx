@@ -160,20 +160,6 @@ function ClaimCard({ claim }: { claim: Claim }) {
             </Button>
           )}
         </div>
-
-        {/* AI 판독 정보가 있을 경우 (옵션) */}
-        {/* 백엔드/타입상 필드는 있지만 값이 항상 오지는 않을 수 있어 간단 표기 */}
-        {claim.aiDecision && (
-          <div className="text-xs">
-            AI 판독: <span className="font-medium">{claim.aiDecision}</span>
-            {claim.aiScore != null ? (
-              <span className="text-muted-foreground">
-                {" "}
-                (score: {claim.aiScore})
-              </span>
-            ) : null}
-          </div>
-        )}
       </CardContent>
 
       <CardFooter className="flex items-center justify-between">

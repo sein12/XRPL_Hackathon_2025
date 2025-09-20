@@ -13,7 +13,7 @@
     // For nodejs:
     "lib": ["ES2020"],
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
 
     // Other Outputs

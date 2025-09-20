@@ -20,10 +20,11 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProductDetailPage from "./routes/dashboard/ProductDetailPage";
 import ContractListPage from "./routes/dashboard/ContractListPage";
 import ContractDetailPage from "./routes/dashboard/ContractDetailPage";
-import ClaimsPage from "./routes/dashboard/ContractToClaimPage";
+import ContractToClaimPage from "./routes/dashboard/ContractToClaimPage";
 import ClaimFormPage from "./routes/dashboard/claim/ClaimFormPage";
 import Profile from "./routes/dashboard/Profile";
-import ClaimListPage from "./routes/dashboard/ClaimListPage";
+import ClaimComplete from "./routes/dashboard/claim/ClaimComplete";
+import ClaimListPage from "./routes/dashboard/claim/ClaimListPage";
 
 // 로그인 상태면 dashboard로, 아니면 로그인 페이지
 function AuthedRedirect() {
@@ -73,7 +74,7 @@ export default function App() {
 
               {/* 청구 */}
               <Route path="claims">
-                <Route index element={<ClaimsPage />} />
+                <Route index element={<ContractToClaimPage />} />
                 <Route path="list" element={<ClaimListPage />} />
                 <Route path="new/:policyId" element={<ClaimFormPage />} />
                 <Route

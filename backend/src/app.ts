@@ -13,7 +13,7 @@ import { credentialRouter } from "./routes/credential.routes";
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload({ limits: { fileSize: 10 * 1024 * 1024 } })); // 10MB
+app.use(fileUpload()); // 10MB
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
@@ -22,6 +22,7 @@ app.use("/products", productRouter);
 app.use("/policies", policyRouter);
 app.use("/claims", claimRouter);
 app.use("/api/credentials", credentialRouter);
+app.use("/ext", externalRouter); // 프론트는 /ext/*만 부르면 됨
 
 app.use(errorHandler);
 

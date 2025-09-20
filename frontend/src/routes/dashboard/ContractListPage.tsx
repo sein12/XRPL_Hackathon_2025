@@ -3,6 +3,7 @@ import type { Policy } from "@/types/contract";
 import { fetchMyPolicies } from "@/api/contract";
 import EmptyState from "@/components/common/EmptyState";
 import PolicyCarouselCard from "@/components/contract/PolicyCarouselCard";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ContractListPage() {
   const [policies, setPolicies] = useState<Policy[]>([]);

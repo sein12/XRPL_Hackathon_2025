@@ -4,7 +4,7 @@ import { fetchMyPolicies } from "@/api/contract";
 import EmptyState from "@/components/common/EmptyState";
 import PolicyCarouselCard from "@/components/contract/PolicyCarouselCard";
 
-export default function ClaimsPage() {
+export default function ContractToClaimPage() {
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);

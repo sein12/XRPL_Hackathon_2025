@@ -27,7 +27,7 @@ const items: Item[] = [
 
 export default function BottomNav() {
   return (
-    <nav className="flex justify-between items-center border-t-2 rounded-md bg-white px-8 py-3">
+    <nav className="flex justify-between items-center border-t-2 rounded-md bg-white px-10 py-3">
       {items.map((item) => (
         <NavLink
           key={item.to}
